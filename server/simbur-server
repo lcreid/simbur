@@ -1,0 +1,7 @@
+# Put this in /etc/sudoers.d/simbur-server on install
+Cmnd_Alias BACKUP_PROGRAMS = /usr/bin/rsync, \
+  /bin/cp, \
+  /bin/rm, \
+  /usr/local/lib/simbur/finish-backup, \
+  /usr/local/lib/simbur/prune-backups
+  
