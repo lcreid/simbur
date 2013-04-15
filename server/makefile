@@ -17,4 +17,5 @@ ${BINDIR}:
 
 /etc/sudoers.d/simbur-server: simbur-server
 	cp $? $@ 
+	chmod 440 $@
 

@@ -2,6 +2,11 @@
 
 . /etc/simbur/server.conf
 
+if [[ $# -ne 2 ]] ; then
+  echo "usage: $0 client-hostname"
+  exit 1
+  fi
+
 CLIENT_HOSTNAME=$1
 BACKUP_USER=$CLIENT_HOSTNAME
 
@@ -17,7 +22,7 @@ echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >>/etc/sudoers.d/simbur-serv
 PRIVATE_KEYFILE=`hostname`_dsa
 ssh-keygen -q -t dsa -f $PRIVATE_KEYFILE
 CLIENT_PRIVATE_KEY=/etc/simbur/$PRIVATE_KEYFILE
-echo "Copy the following lines to $CLIENT_PRIVATE_KEY"
+echo "Copy the following lines to $CLIENT_PRIVATE_KEY on the CLIENT."
 cat $PRIVATE_KEYFILE
 echo "Don't copy this line."
 echo "Then type 'sudo chmod 600 $CLIENT_PRIVATE_KEY'"
