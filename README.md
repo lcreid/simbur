@@ -1,15 +1,12 @@
-simbur
-======
+# simbur
 
 SIMple Back Up and Recovery
 
-Quick Installation
-==================
+## Quick Installation
 You need to have accounts with administrator privileges on both the client and the server (you must be able to sudo
 on both the client and the server).
 
-Server
-------
+### Server
 If you already have a server set up, you don't have to do this again.
 
 If you don't have a server set up, you have to set one up. You need a Linux server
@@ -35,8 +32,7 @@ set up the server configuration file the way you want it:
 
     sudo vi /etc/sbur/server.conf
 
-Client
-------
+### Client
 Enroll the new client machine. Log in to the server.
 
     sudo /usr/local/lib/simbur/enroll-host client-machine-name
