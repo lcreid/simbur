@@ -58,3 +58,5 @@ Set up the client configuration file the way you need it. This step is obligator
 backup server at the very least:
 
     sudo vi /etc/simbur/client.conf
+
+Other documentation is in the [simbur wiki](https://github.com/lcreid/simbur/wiki).
