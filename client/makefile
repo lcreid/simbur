@@ -1,4 +1,4 @@
-EXECUTABLES=full-backup incremental-backup
+EXECUTABLES=full-backup incremental-backup simburd enroll-client
 BINDIR=/usr/local/lib/simbur
 
 executables: ${EXECUTABLES}
