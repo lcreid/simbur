@@ -30,7 +30,7 @@ Install it:
 
 set up the server configuration file the way you want it:
 
-    sudo vi /etc/sbur/server.conf
+    sudo vi /etc/simbur/server.conf
 
 ### Client
 Enroll the new client machine. Log in to the server.
