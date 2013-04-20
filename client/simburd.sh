@@ -1,10 +1,17 @@
 #!/bin/bash
 
-. ./client.conf
+. /etc/simbur/client.conf
 
-MACOS_FILE_TIME="stat -f %m"
-LINUX_FILE_TIME="date +%s -r"
+MACOS_FILE_TIME=
+LINUX_FILE_TIME=
 
+case `uname` in
+  Darwin) FILE_MOD_TIME="stat -f %m" ;;
+  Linux) FILE_MOD_TIME="date +%s -r" ;;
+  *) echo "Operating system `uname` not supported."
+    exit 1;;
+  esac
+  
 function to_seconds()
 {
   SECONDS_PER_DAY=86400
@@ -32,8 +39,7 @@ function to_seconds()
 BACKUP_INTERVAL_S=`to_seconds $BACKUP_INTERVAL`
 
 if [ -e $BACKUP_END_FILE ]; then
-    # Works on Linux
-    LAST_BACKUP_END_S=`date -r $BACKUP_END_FILE +%s`
+    LAST_BACKUP_END_S=`$FILE_MOD_TIME $BACKUP_END_FILE`
   fi
 
 touch $BACKUP_START_FILE  

@@ -2,7 +2,7 @@
 
 . /etc/simbur/server.conf
 
-if [[ $# -ne 2 ]] ; then
+if [[ $# -ne 1 ]] ; then
   echo "usage: $0 client-hostname"
   exit 1
   fi
@@ -12,7 +12,7 @@ BACKUP_USER=$CLIENT_HOSTNAME
 
 # Create the backup user with its home directory on the backup device
 HOME_DIR=$BACKUP_ROOT/$BACKUP_USER
-adduser --quiet --disabled-password --home $HOME_DIR $BACKUP_USER
+adduser --quiet --disabled-password --gecos "" --home $HOME_DIR $BACKUP_USER
 
 # Add the user to sudoers
 echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >>/etc/sudoers.d/simbur-server
@@ -20,7 +20,7 @@ echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >>/etc/sudoers.d/simbur-serv
 # Create the key in the home directory of the new user
 # sudo to the backup user to get it in the right place
 PRIVATE_KEYFILE=`hostname`_dsa
-ssh-keygen -q -t dsa -f $PRIVATE_KEYFILE
+ssh-keygen -q -t dsa -f $PRIVATE_KEYFILE -N ""
 CLIENT_PRIVATE_KEY=/etc/simbur/$PRIVATE_KEYFILE
 echo "Copy the following lines to $CLIENT_PRIVATE_KEY on the CLIENT."
 cat $PRIVATE_KEYFILE
