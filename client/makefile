@@ -1,5 +1,5 @@
-EXECUTABLES=full-backup incremental-backup simburd enroll-client
-BINDIR=/usr/local/lib/simbur
+EXECUTABLES=simbur-full simbur-incremental simburd simbur-enroll-client
+BINDIR=/usr/bin
 MANFILES=${EXECUTABLES:%=%.1}
 
 .SECONDEXPANSION:
@@ -27,12 +27,9 @@ ${CONFIG_FILES}: $$(@F)
 	cp $? $@
 
 DEBIAN_CONFIG_FILES=debian/etc/simbur/exclude.conf debian/etc/simbur/client.conf
-DEBIAN_EXECUTABLES=debian/usr/local/lib/simbur/full-backup \
-	debian/usr/local/lib/simbur/incremental-backup \
-	debian/usr/local/lib/simbur/simburd \
-	debian/usr/local/lib/simbur/enroll-client
+DEBIAN_EXECUTABLES=${EXECUTABLES:%=debian${BINDIR}/%}
 DEBIAN_DIRECTORIES=debian/etc/simbur \
-debian/usr/local/lib/simbur \
+debian/${BINDIR} \
 debian/usr/share/man/man1 \
 debian/usr/share/man/man5 
 
@@ -49,7 +46,8 @@ debian: simbur-client.deb
 simbur-client.deb: ${DEBIAN_DIRECTORIES} \
 ${DEBIAN_EXECUTABLES} \
 ${DEBIAN_CONFIG_FILES} \
-${DEBIAN_MANFILES} 
+${DEBIAN_MANFILES} \
+debian/DEBIAN/*
 	fakeroot dpkg-deb --build debian
 	mv debian.deb simbur-client.deb
 
@@ -70,4 +68,5 @@ ${DEBIAN_MANFILES_GZIPPED}: $$(@F)
 
 debug:
 	echo "'${DEBIAN_MANFILES_GZIPPED}'"
+	echo "'${DEBIAN_EXECUTABLES}'"
 
