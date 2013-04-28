@@ -1,0 +1,42 @@
+.\" Process this file with
+.\" groff -man -Tascii simburd.1
+.\"
+.TH SIMBURD 1 "APRIL 2013" "Jade Systems Inc" "User Manuals"
+.SH NAME
+simburd \- the SIMple Back Up and Recovery daemon
+.SH SYNOPSIS
+.B /usr/local/lib/simburd 
+.SH DESCRIPTION
+.B simburd
+Is the daemon for the simbur suite of backup and recorvery tools.
+It runs 
+.BR incremental-backup (1)
+at the appropriate time, as defined by the parameters set in
+.BR client.conf (5)
+.SH FILES
+.I /etc/simbur/client.conf
+.RS
+The client-side configuration file. See
+.BR client.conf (5)
+for further details.
+.RE
+.I $BACKUP_SOURCE/.last-backup-start
+.RS
+Timestamp for the start of the last backup attempted. 
+The backup source is typically root, or a user's home directory.
+.RE
+.I $BACKUP_SOURCE/.last-backup-end
+.RS
+Timestamp for the end of the last backup completed. 
+The backup source is typically root, or a user's home directory.
+.RE
+.SH BUGS
+See the issues log at: https://github.com/lcreid/simbur/issues
+.SH AUTHOR
+Larry Reid <larry.reid@jadesystems.ca>
+.SH "SEE ALSO"
+.BR client.conf (5),
+.BR enroll-client (1),
+.BR full-backup (1),
+.BR incremental-backup (1)
+

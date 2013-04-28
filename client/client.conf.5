@@ -1,0 +1,25 @@
+.\" Process this file with
+.\" groff -man -Tascii client.conf.5
+.\"
+.TH CLIENT.CONF 5 "APRIL 2013" "Jade Systems Inc" "User Manuals"
+.SH NAME
+client.conf \- the SIMple Back Up and Recovery client configuration file
+.SH DESCRIPTION
+.B client.conf
+configures the client programs. It includes the ability to set the interval 
+between backups, the name of the backup server where the backups are stored,
+and the name of the user on the backup server that is used to store and
+retrieve backups.
+
+
+
+.SH BUGS
+See the issues log at: https://github.com/lcreid/simbur/issues
+.SH AUTHOR
+Larry Reid <larry.reid@jadesystems.ca>
+.SH "SEE ALSO"
+.BR enroll-client (1),
+.BR full-backup (1),
+.BR incremental-backup (1),
+.BR simburd (1)
+

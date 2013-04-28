@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 . /etc/simbur/client.conf
 
@@ -8,6 +8,9 @@ SNAPSHOT=`date +%Y%m%d%H%M%S%Z`
 SNAPSHOT_IN_PROGRESS=$SNAPSHOT-not-completed
 
 # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
+# (Mac doesn't support -AX.)
+# Someone's solution here: http://nicolasgallagher.com/mac-osx-bootable-backup-drive-with-rsync/
+# The version of rsync on mac seems to change and the options change with it. A real mess.
 # The delete and delete-excluded options aren't really needed here.
 rsync -vaAX \
   --exclude-from=$EXCLUDES \

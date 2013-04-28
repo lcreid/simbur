@@ -1,0 +1,42 @@
+.\" Process this file with
+.\" groff -man -Tascii full-backup.1
+.\"
+.TH FULL-BACKUP 1 "APRIL 2013" "Jade Systems Inc" "User Manuals"
+.SH NAME
+full-backup \- the SIMple Back Up and Recovery full backup
+.br
+incremental-backup \- the SIMple Back Up and Recovery client incremental backup
+.SH SYNOPSIS
+.B /usr/local/lib/full-backup 
+.br
+.B /usr/local/lib/incremental-backup
+.SH DESCRIPTION
+.B full-backup
+creates a copy of all files and directories below the BACKUP_SOURCE defined in
+.BR client-conf (5).
+.B incremental-backup
+creates a copy of all files and directories that have changed since the last
+full or incremental backup. The incremental backup is a complete copy 
+of all the files and directories below the BACKUP_SOURCE, but only requires
+space for the files that have changed.
+
+(
+.B incremental-backup
+works by creating a duplicate directory tree using hard links to the previous
+backup, then creating new files only for those files that have changed.)
+
+These programs must be run with superuser privileges.
+.SH FILES
+.I /etc/simbur/client.conf
+.RS
+The client-side configuration file. See
+.BR client.conf (5)
+for further details.
+.SH BUGS
+See the issues log at: https://github.com/lcreid/simbur/issues
+.SH AUTHOR
+Larry Reid <larry.reid@jadesystems.ca>
+.SH "SEE ALSO"
+.BR enroll-client (1),
+.BR simburd (1)
+

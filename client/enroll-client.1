@@ -1,0 +1,35 @@
+.\" Process this file with
+.\" groff -man -Tascii enroll-client.1
+.\"
+.TH ENROLL-CLIENT 1 "APRIL 2013" "Jade Systems Inc" "User Manuals"
+.SH NAME
+enroll-client \- the SIMple Back Up and Recovery client enrollment program
+.SH SYNOPSIS
+.BI /usr/local/lib/enroll-client admin-user-name-on-backup-server
+.SH DESCRIPTION
+.B enroll-client
+enrolls a computer with the backup server. You must enroll before the first
+time you attempt a backup. Once successfully enrolled, you shouldn't have
+to enroll again.
+
+.I admin-user-name-on-backup-server
+is the name of a user on the backup server with superuser privileges.
+.B enroll-client
+will ask for that user's password several times.
+
+This program must be run with superuser privileges.
+.SH FILES
+.I /etc/simbur/client.conf
+.RS
+The client-side configuration file. See
+.BR client.conf (5)
+for further details.
+.SH BUGS
+See the issues log at: https://github.com/lcreid/simbur/issues
+.SH AUTHOR
+Larry Reid <larry.reid@jadesystems.ca>
+.SH "SEE ALSO"
+.BR full-backup (1),
+.BR incremental-backup (1),
+.BR simburd (1)
+
