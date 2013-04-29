@@ -5,6 +5,8 @@
 test/
 client/debian/*
 !client/debian/DEBIAN
+server/debian/*
+!server/debian/DEBIAN
 *.gz
 *.deb
 server/tmp

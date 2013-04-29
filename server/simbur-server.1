@@ -1,0 +1,42 @@
+.\" Process this file with
+.\" groff -man -Tascii simbur-server.1
+.\"
+.TH SIMBUR_SERVER 1 "APRIL 2013" "Jade Systems Inc" "User Manuals"
+.SH NAME
+simbur-server \- the SIMple Back Up and Recovery server program
+.SH SYNOPSIS
+.BI /usr/local/lib/simbur-server 
+.I command
+.SH DESCRIPTION
+.B simbur-server
+runs various tasks on the backup server, under command of a client program.
+They can also be run by knowledgeable users directly on the server for
+system maintenance purposes.
+
+The 
+.I command
+determines what the server will do.
+.IP enroll-host
+.I username
+.IP finish-backup
+.IP purge-backups 
+.BI [ #[dw] ]
+.IP start-incremental
+.IP help
+Print help information.
+.SH FILES
+.I /etc/simbur/simbur-server.conf
+.RS
+The server-side configuration file. See
+.BR simbur-server.conf (5)
+for further details.
+.SH BUGS
+See the issues log at: https://github.com/lcreid/simbur/issues
+.SH AUTHOR
+Larry Reid <larry.reid@jadesystems.ca>
+.SH "SEE ALSO"
+.BR simbur-enroll-client (1),
+.BR simbur-full (1),
+.BR simbur-incremental (1),
+.BR simburd (1)
+
