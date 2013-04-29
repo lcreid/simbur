@@ -1,72 +1,61 @@
-EXECUTABLES=simbur-full simbur-incremental simburd simbur-enroll-client
-BINDIR=/usr/bin
-MANFILES=${EXECUTABLES:%=%.1}
+# See: http://www.gnu.org/software/make/manual/make.html#Makefile-Conventions
+prefix = ${DESTDIR}/usr
+bindir=$(prefix)/bin
+datarootdir = $(prefix)/share
+docdir=$(datarootdir)/doc
+mandir=$(datarootdir)/man
+man1dir=$(mandir)/man1
+man5dir=$(mandir)/man5
+sysconfdir=${DESTDIR}/etc/simbur
 
 .SECONDEXPANSION:
 
-executables: ${EXECUTABLES}
+EXECUTABLES=simbur-full simbur-incremental simburd simbur-enroll-client
+MAN1FILES=${EXECUTABLES:%=%.1}
+MAN5FILES=simbur-client.conf.5
 
-INSTALLED_EXECUTABLES=${EXECUTABLES:%=${BINDIR}/%}
+INSTALLED_EXECUTABLES=${EXECUTABLES:%=${bindir}/%}
+INSTALLED_MANPAGES=${MAN1FILES:%=${man1dir}/%.gz} ${MAN5FILES:%=${man5dir}/%.gz}
+INSTALLED_CONFIG_FILES=${sysconfdir}/exclude.conf ${sysconfdir}/simbur-client.conf
 
-install: ${BINDIR} ${INSTALLED_EXECUTABLES} config
+SOURCES=*.sh *.1 *.5 *.conf makefile
 
-${INSTALLED_EXECUTABLES}: $$(@F)
-	cp $? ${BINDIR}
+all: ${EXECUTABLES}
 
-${BINDIR}:
-	mkdir -p $@
+install: installdirs ${INSTALLED_EXECUTABLES} ${INSTALLED_MANPAGES} ${INSTALLED_CONFIG_FILES}
 
-CONFIG_FILES=/etc/simbur/exclude.conf /etc/simbur/client.conf
+uninstall: 
+	-rm ${INSTALLED_EXECUTABLES} ${INSTALLED_MANPAGES} ${INSTALLED_CONFIG_FILES}
 
-config: /etc/simbur ${CONFIG_FILES}
-
-/etc/simbur:
-	mkdir -p $@
-
-${CONFIG_FILES}: $$(@F)
+${INSTALLED_EXECUTABLES} \
+${INSTALLED_MANPAGES} \
+${INSTALLED_CONFIG_FILES}: $$(@F)
 	cp $? $@
 
-DEBIAN_CONFIG_FILES=debian/etc/simbur/exclude.conf debian/etc/simbur/client.conf
-DEBIAN_EXECUTABLES=${EXECUTABLES:%=debian${BINDIR}/%}
-DEBIAN_DIRECTORIES=debian/etc/simbur \
-debian/${BINDIR} \
-debian/usr/share/man/man1 \
-debian/usr/share/man/man5 
-
-
-DEBIAN_MANFILES_GZIPPED=${MANFILES:%=debian/usr/share/man/man1/%.gz} \
-debian/usr/share/man/man5/client.conf.5.gz
-
-DEBIAN_MANFILES=${DEBIAN_MANFILES_GZIPPED} 
-#DEBIAN_DOC_DIRECTORY=debian/usr/share/doc/simbur
-#DEBIAN_DOCFILES=${DEBIAN_DOC_DIRECTORY}/copyright
+config: ${sysconfdir} ${INSTALLED_CONFIG_FILES}
 
 debian: simbur-client.deb
 
-simbur-client.deb: ${DEBIAN_DIRECTORIES} \
-${DEBIAN_EXECUTABLES} \
-${DEBIAN_CONFIG_FILES} \
-${DEBIAN_MANFILES} \
-debian/DEBIAN/*
+simbur-client.deb: ${SOURCES} debian/DEBIAN/*
+	make DESTDIR=debian install
+	-rm debian/DEBIAN/*~
 	fakeroot dpkg-deb --build debian
 	mv debian.deb simbur-client.deb
-
-${DEBIAN_DIRECTORIES}:  
-	mkdir -p $@
-
-${DEBIAN_CONFIG_FILES} ${DEBIAN_EXECUTABLES}: $$(@F)
-	cp $? $@
-
-${DEBIAN_MANFILES_GZIPPED}: $$(@F)
-	cp $? $@
 
 %.gz : %
 	gzip --best --to-stdout $? >$@
 
-# ${DEBIAN_DOCFILES}: $$(@F)
-	# cp $? $@
-
 debug:
-	echo "'${DEBIAN_MANFILES_GZIPPED}'"
-	echo "'${DEBIAN_EXECUTABLES}'"
+	echo "'${man5dir}'"
+
+clean:
+	rm $(EXECUTABLES) ${MAN1FILES:%=%.gz} ${MAN5FILES:%=%.gz} *~
+
+distclean: clean
+	-rm ${INSTALLED_CONFIG_FILES}
+
+installdirs: ${bindir} ${sysconfdir} ${man1dir} ${man5dir} ${docdir}
+
+${bindir} ${sysconfdir} ${man1dir} ${man5dir} ${docdir}:
+	mkdir -p $@ 
 

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /etc/simbur/client.conf
+. /etc/simbur/simbur-client.conf
 
 START_TIME=`date +%s`
 

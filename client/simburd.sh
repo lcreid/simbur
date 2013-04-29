@@ -32,7 +32,7 @@ function to_seconds()
 while true; do
   # Reread the configuration and recalculate everything each time through,
   # so there's less need to kill and restart the daemon.
-  . /etc/simbur/client.conf
+  . /etc/simbur/simbur-client.conf
   
   BACKUP_INTERVAL_S=`to_seconds $BACKUP_INTERVAL`
 

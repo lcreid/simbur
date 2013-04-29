@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /etc/simbur/client.conf
+. /etc/simbur/simbur-client.conf
 
 if [[ $# -ne 1 ]] ; then
   echo "usage: $0 admin-user-name-on-backup-server"
