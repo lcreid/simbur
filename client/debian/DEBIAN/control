@@ -1,0 +1,14 @@
+Package: simbur-client
+Priority: optional
+Section: admin
+Installed-Size: 
+Maintainer: Larry Reid <lcreid@jadesystems.ca>
+Architecture: all
+Version: 1.0-0
+Depends: rsync (>= 3)
+Description: SIMple BackUp and Recovery client. Backs up your
+  computer without a lot of hassle, and resilient to unscheduled 
+  events. It's therefore good for desktops and laptops that get
+  turned on and off in unpredictable ways. It's also perfectly fine
+  for servers.
+
