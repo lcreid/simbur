@@ -10,4 +10,4 @@ do
       esac
   done
 
-simbur-server prune-backups "$*"
+simbur-server prune-backups "$@"

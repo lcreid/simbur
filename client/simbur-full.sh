@@ -21,10 +21,10 @@ rsync -vaAX \
   $BACKUP_USER@$BACKUP_TARGET:$SNAPSHOT_IN_PROGRESS 
 
 # Rename the snapshot
-ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/local/lib/simbur/finish-backup $SNAPSHOT_IN_PROGRESS $SNAPSHOT
+ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/finish-backup $SNAPSHOT_IN_PROGRESS $SNAPSHOT
 
 # Delete any snapshots that are no longer of interest
-ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/local/lib/simbur/prune-backups 14 
+ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/prune-backups 14 
 
 END_TIME=`date +%s`
 DURATION=$(( $END_TIME - $START_TIME ))

@@ -18,9 +18,9 @@ MAN5FILES=simbur-server.conf.5
 INSTALLED_EXECUTABLES=${EXECUTABLES:%=${bindir}/%}
 INSTALLED_MANPAGES=${MAN1FILES:%=${man1dir}/%.gz} ${MAN5FILES:%=${man5dir}/%.gz}
 INSTALLED_CONFIG_FILES=${sysconfdir}/simbur-server.conf 
-INSTALLED_SUDOERS_FILES=${sudoersdir}/simbur-server.sudo
+INSTALLED_SUDOERS_FILES=${sudoersdir}/simbur-server-sudo
 
-SOURCES=*.sh *.1 *.5 *.conf *.sudo makefile
+SOURCES=*.sh *.1 *.5 *.conf *-sudo makefile
 
 all: ${EXECUTABLES}
 
@@ -38,7 +38,8 @@ ${INSTALLED_MANPAGES} \
 ${INSTALLED_CONFIG_FILES}: $$(@F)
 	cp $? $@
 
-${sudoersdir}/simbur-server.sudo: simbur-server.sudo
+${sudoersdir}/simbur-server-sudo: simbur-server-sudo
+	-rm -f $@
 	cp $? $@ 
 	chmod 440 $@
 

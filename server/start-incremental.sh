@@ -2,4 +2,4 @@
 
 #echo "Command line: $0 $*"
 
-simbur-server start-incremental "$*"
+simbur-server start-incremental "$@"

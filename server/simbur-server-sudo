@@ -2,6 +2,7 @@
 Cmnd_Alias BACKUP_PROGRAMS = /usr/bin/rsync, \
   /bin/cp, \
   /bin/rm, \
-  /usr/local/lib/simbur/finish-backup, \
-  /usr/local/lib/simbur/prune-backups
+  /usr/bin/finish-backup, \
+  /usr/bin/prune-backups, \
+  /usr/bin/simbur-server
   

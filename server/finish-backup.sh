@@ -1,3 +1,3 @@
 #!/bin/bash
 
-simbur-server finish-backup "$*"
+simbur-server finish-backup "$@"

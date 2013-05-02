@@ -5,4 +5,4 @@ if [[ $# -ne 1 ]] ; then
   exit 1
   fi
 
-simbur-server enroll-host "$*"
+simbur-server enroll-host "$@"

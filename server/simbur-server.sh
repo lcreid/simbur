@@ -13,6 +13,10 @@ done
 
 function enroll_host()
 {
+  USAGE="Usage: $0 enroll-host client-hostname"
+  
+  [ -z $1 ] && echo $USAGE >&2 && exit 1
+  
   CLIENT_HOSTNAME=$1
   BACKUP_USER=$CLIENT_HOSTNAME
   
@@ -21,7 +25,7 @@ function enroll_host()
   adduser --quiet --disabled-password --gecos "" --home $HOME_DIR $BACKUP_USER
   
   # Add the user to sudoers
-  echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >>/etc/sudoers.d/simbur-server
+  echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >>/etc/sudoers.d/simbur-server.sudo
   
   # Create the key in the home directory of the new user
   # sudo to the backup user to get it in the right place
@@ -33,7 +37,7 @@ function enroll_host()
   PRIVATE_KEYFILE=$SSH_DIR/`hostname -s`_dsa
   ssh-keygen -q -t dsa -f $PRIVATE_KEYFILE -N ""
   
-  CLIENT_PRIVATE_KEY=/etc/simbur/$PRIVATE_KEYFILE
+  CLIENT_PRIVATE_KEY=/etc/simbur/$(basename $PRIVATE_KEYFILE)
   echo "Copy the following lines to $CLIENT_PRIVATE_KEY on the CLIENT."
   cat $PRIVATE_KEYFILE
   echo "Don't copy this line."
@@ -88,7 +92,7 @@ function prune_backups()
   #echo $DELETE_BEFORE
   
   for d in $BACKUP_ROOT/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*; do
-    echo $d, $DELETE_BEFORE
+    # echo $d, $DELETE_BEFORE
     if [[ -d $d && `basename $d` < $DELETE_BEFORE ]] ; then
       echo sudo rm -rf $d
       fi
@@ -99,16 +103,16 @@ COMMAND=$1
 shift
 
 case $COMMAND in
-  enroll-host)  enroll_host
+  enroll-host)  enroll_host "$@"
     exit $?;;
     
-  start-incremental)  start_incremental
+  start-incremental)  start_incremental "$@"
     exit $?;;
     
-  finish-backup)  finish_backup
+  finish-backup)  finish_backup "$@"
     exit $?;;
     
-  prune-backups)  prune_backups
+  prune-backups)  prune_backups "$@"
     exit $?;;
     
   help) echo $USAGE

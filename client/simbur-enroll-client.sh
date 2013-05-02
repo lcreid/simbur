@@ -14,7 +14,7 @@ Also note that the second time, you will see the password on the
 screen, so make sure that no one is looking over your shoulder.
 EOF
 
-ssh $1@$BACKUP_TARGET sudo -S /usr/local/lib/simbur/enroll-host `hostname -s` | tee /tmp/simbur.$$ 
+ssh $1@$BACKUP_TARGET sudo -S /usr/bin/enroll-host `hostname -s` | tee /tmp/simbur.$$ 
 
 sed -n '/-----BEGIN DSA PRIVATE KEY-----/,/-----END DSA PRIVATE KEY-----/p' \
   /tmp/simbur.$$ >$PRIVATE_KEYFILE
