@@ -43,9 +43,11 @@ while true; do
     fi
     
   if [[ ! -e $BACKUP_END_FILE || $(( `date +%s` - $LAST_BACKUP_END_S )) -gt $BACKUP_INTERVAL_S ]] ; then
+    logger -t simburd -p "Backup started"
     touch $BACKUP_START_FILE  
     /usr/bin/simbur-incremental
     touch $BACKUP_END_FILE
+    logger -t simburd -p "Backup ended"
     fi
   
   # Sleep until the next time

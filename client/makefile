@@ -6,7 +6,10 @@ docdir=$(datarootdir)/doc
 mandir=$(datarootdir)/man
 man1dir=$(mandir)/man1
 man5dir=$(mandir)/man5
-sysconfdir=${DESTDIR}/etc/simbur
+sysconfdir=${DESTDIR}/etc
+SIMBUR_CONF_DIR=${sysconfdir}/simbur
+INIT_DIR=${sysconfdir}/init
+LOGROTATE_DIR=${sysconfdir}/logrotate.d
 
 .SECONDEXPANSION:
 
@@ -16,13 +19,19 @@ MAN5FILES=simbur-client.conf.5
 
 INSTALLED_EXECUTABLES=${EXECUTABLES:%=${bindir}/%}
 INSTALLED_MANPAGES=${MAN1FILES:%=${man1dir}/%.gz} ${MAN5FILES:%=${man5dir}/%.gz}
-INSTALLED_CONFIG_FILES=${sysconfdir}/exclude.conf ${sysconfdir}/simbur-client.conf
+INSTALLED_CONFIG_FILES=${SIMBUR_CONF_DIR}/exclude.conf \
+${SIMBUR_CONF_DIR}/simbur-client.conf \
+$(INIT_DIR)/simburd.conf
+LOGROTATE_CONFIG_FILE=${LOGROTATE_DIR}/simbur-client-logrotate.conf
 
 SOURCES=*.sh *.1 *.5 *.conf makefile
 
 all: ${EXECUTABLES}
 
-install: installdirs ${INSTALLED_EXECUTABLES} ${INSTALLED_MANPAGES} ${INSTALLED_CONFIG_FILES}
+install: installdirs \
+${INSTALLED_EXECUTABLES} \
+${INSTALLED_MANPAGES} \
+${INSTALLED_CONFIG_FILES}
 
 uninstall: 
 	-rm ${INSTALLED_EXECUTABLES} ${INSTALLED_MANPAGES} ${INSTALLED_CONFIG_FILES}
@@ -32,7 +41,9 @@ ${INSTALLED_MANPAGES} \
 ${INSTALLED_CONFIG_FILES}: $$(@F)
 	cp $? $@
 
-config: ${sysconfdir} ${INSTALLED_CONFIG_FILES}
+$(INSTALLED_INIT_FILES): 
+
+config: ${SIMBUR_CONF_DIR} ${INSTALLED_CONFIG_FILES}
 
 debian: simbur-client.deb
 
@@ -54,8 +65,14 @@ clean:
 distclean: clean
 	-rm ${INSTALLED_CONFIG_FILES}
 
-installdirs: ${bindir} ${sysconfdir} ${man1dir} ${man5dir} ${docdir}
+installdirs: ${bindir} \
+${SIMBUR_CONF_DIR} \
+${INIT_DIR} \
+${man1dir} \
+${man5dir} \
+${docdir} \
+${LOGROTATE_DIR}
 
-${bindir} ${sysconfdir} ${man1dir} ${man5dir} ${docdir}:
+${bindir} ${SIMBUR_CONF_DIR} ${INIT_DIR} ${man1dir} ${man5dir} ${docdir} ${LOGROTATE_DIR}:
 	mkdir -p $@ 
 

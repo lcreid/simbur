@@ -25,7 +25,7 @@ function enroll_host()
   adduser --quiet --disabled-password --gecos "" --home $HOME_DIR $BACKUP_USER
   
   # Add the user to sudoers
-  echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >>/etc/sudoers.d/simbur-server.sudo
+  echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >>/etc/sudoers.d/simbur-server-sudo-$BACKUP_USER
   
   # Create the key in the home directory of the new user
   # sudo to the backup user to get it in the right place
