@@ -1,2 +1,2 @@
 /etc/simbur/simbur-server.conf
-/etc/sudoers.d/simbur-server.sudo
+/etc/sudoers.d/simbur-server-sudo

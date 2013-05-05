@@ -25,7 +25,9 @@ function enroll_host()
   adduser --quiet --disabled-password --gecos "" --home $HOME_DIR $BACKUP_USER
   
   # Add the user to sudoers
-  echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >>/etc/sudoers.d/simbur-server-sudo-$BACKUP_USER
+  SUDOERS_FILE=/etc/sudoers.d/simbur-server-sudo-$BACKUP_USER
+  echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >$SUDOERS_FILES
+  chomod 440 $SUDOERS_FILE
   
   # Create the key in the home directory of the new user
   # sudo to the backup user to get it in the right place
@@ -94,7 +96,8 @@ function prune_backups()
   for d in $BACKUP_ROOT/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*; do
     # echo $d, $DELETE_BEFORE
     if [[ -d $d && `basename $d` < $DELETE_BEFORE ]] ; then
-      echo sudo rm -rf $d
+      echo "Purging $d"
+      sudo rm -rf $d
       fi
     done
 }

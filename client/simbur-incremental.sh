@@ -2,13 +2,36 @@
 
 . /etc/simbur/simbur-client.conf
 
+USAGE="Usage: `basename $0` -[fhi]"
+
+while getopts hfi x ; do
+  case $x in
+  f)  BACKUP_TYPE=full;;
+  h)  echo $USAGE
+      exit 0;;
+  i)  BACKUP_TYPE=;;
+  esac
+done
+
 START_TIME=`date +%s`
 
 SNAPSHOT=`date +%Y%m%d%H%M%S%Z`
 SNAPSHOT_IN_PROGRESS=$SNAPSHOT-not-completed
 
 # Set up the incremental
-ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
+[ "$BACKUP_TYPE" = "full" ] || 
+  ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
+    /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
+
+LOG_DIR=/var/log/simbur
+
+if [ ! -d $LOG_DIR ]; then
+  if [ ! `mkdir -p $LOG_DIR` ]; then
+    echo "`basename $0: can't create log directory >&2`"
+    exit 1
+    fi
+  fi
+
 
 # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
 rsync -vaAX \
@@ -17,9 +40,9 @@ rsync -vaAX \
   --exclude-from=$EXCLUDES \
   --rsync-path="sudo rsync" \
   --rsh="ssh -i $PRIVATE_KEYFILE" \
-  --log-file $SNAPSHOT.log \
+  --log-file $LOG_DIR/$SNAPSHOT.log \
   $BACKUP_SOURCE \
-  $BACKUP_USER@$BACKUP_TARGET:$SNAPSHOT_IN_PROGRESS >>/var/log/simbur.log
+  $BACKUP_USER@$BACKUP_TARGET:$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>&1
 
 # Rename the snapshot
 ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/simbur-server finish-backup $SNAPSHOT_IN_PROGRESS $SNAPSHOT

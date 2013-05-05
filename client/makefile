@@ -21,8 +21,8 @@ INSTALLED_EXECUTABLES=${EXECUTABLES:%=${bindir}/%}
 INSTALLED_MANPAGES=${MAN1FILES:%=${man1dir}/%.gz} ${MAN5FILES:%=${man5dir}/%.gz}
 INSTALLED_CONFIG_FILES=${SIMBUR_CONF_DIR}/exclude.conf \
 ${SIMBUR_CONF_DIR}/simbur-client.conf \
-$(INIT_DIR)/simburd.conf
-LOGROTATE_CONFIG_FILE=${LOGROTATE_DIR}/simbur-client-logrotate.conf
+$(INIT_DIR)/simburd.conf \
+${LOGROTATE_DIR}/simbur-client-logrotate.conf
 
 SOURCES=*.sh *.1 *.5 *.conf makefile
 

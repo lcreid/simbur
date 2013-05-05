@@ -8,7 +8,9 @@ case `uname` in
   *) echo "Operating system `uname` not supported."
     exit 1;;
   esac
-  
+
+syslog="logger -t simburd"
+
 function to_seconds()
 {
   SECONDS_PER_DAY=86400
@@ -43,11 +45,11 @@ while true; do
     fi
     
   if [[ ! -e $BACKUP_END_FILE || $(( `date +%s` - $LAST_BACKUP_END_S )) -gt $BACKUP_INTERVAL_S ]] ; then
-    logger -t simburd -p "Backup started"
+    $syslog "Backup started"
     touch $BACKUP_START_FILE  
-    /usr/bin/simbur-incremental
+    /usr/bin/simbur-incremental | $syslog
     touch $BACKUP_END_FILE
-    logger -t simburd -p "Backup ended"
+    $syslog "Backup ended"
     fi
   
   # Sleep until the next time
