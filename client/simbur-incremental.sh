@@ -26,8 +26,8 @@ SNAPSHOT_IN_PROGRESS=$SNAPSHOT-not-completed
 LOG_DIR=/var/log/simbur
 
 if [ ! -d $LOG_DIR ]; then
-  if [ ! `mkdir -p $LOG_DIR` ]; then
-    echo "`basename $0: can't create log directory >&2`"
+  if [ `mkdir -p $LOG_DIR` ]; then
+    echo "`basename $0: can\'t create log directory >&2`"
     exit 1
     fi
   fi

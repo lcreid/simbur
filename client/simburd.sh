@@ -47,7 +47,7 @@ while true; do
   if [[ ! -e $BACKUP_END_FILE || $(( `date +%s` - $LAST_BACKUP_END_S )) -gt $BACKUP_INTERVAL_S ]] ; then
     $syslog "Backup started"
     touch $BACKUP_START_FILE  
-    /usr/bin/simbur-incremental | $syslog
+    ( /usr/bin/simbur-incremental 2>&1 ) | $syslog
     touch $BACKUP_END_FILE
     $syslog "Backup ended"
     fi
