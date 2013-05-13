@@ -8,7 +8,7 @@ man1dir=$(mandir)/man1
 man5dir=$(mandir)/man5
 sysconfdir=${DESTDIR}/etc
 SIMBUR_CONF_DIR=${sysconfdir}/simbur
-INIT_DIR=${sysconfdir}/init
+TARGET_OS?=$(shell "uname")
 LOGROTATE_DIR=${sysconfdir}/logrotate.d
 
 .SECONDEXPANSION:
@@ -21,10 +21,19 @@ INSTALLED_EXECUTABLES=${EXECUTABLES:%=${bindir}/%}
 INSTALLED_MANPAGES=${MAN1FILES:%=${man1dir}/%.gz} ${MAN5FILES:%=${man5dir}/%.gz}
 INSTALLED_CONFIG_FILES=${SIMBUR_CONF_DIR}/exclude.conf \
 ${SIMBUR_CONF_DIR}/simbur-client.conf \
-$(INIT_DIR)/simburd.conf \
 ${LOGROTATE_DIR}/simbur-client-logrotate.conf
 
-SOURCES=*.sh *.1 *.5 *.conf makefile
+ifeq (Darwin, ${TARGET_OS})
+	INIT_DIR=${DESTDIR}/Library/LaunchDaemons
+	INSTALLED_CONFIG_FILES+=$(INIT_DIR)/ca.jadesystems.simburd.plist
+else ifeq (Linux, ${TARGET_OS})
+	INIT_DIR=${sysconfdir}/init
+	INSTALLED_CONFIG_FILES+=$(INIT_DIR)/simburd.conf
+else
+	$(error "Operating system " ${TARGET_OS} " not supported."
+endif
+
+SOURCES=*.sh *.1 *.5 *.conf *.plist makefile
 
 all: ${EXECUTABLES}
 
@@ -45,9 +54,16 @@ $(INSTALLED_INIT_FILES):
 
 config: ${SIMBUR_CONF_DIR} ${INSTALLED_CONFIG_FILES}
 
+
+############
+#
+# .deb for Mint, Ubuntu, maybe Debian
+#
+############
+
 debian: simbur-client.deb
 
-simbur-client.deb: ${SOURCES} debian/DEBIAN/*
+simbur-client.deb: ${SOURCES} debian/DEBIAN/* simburd.conf
 	make DESTDIR=debian install
 	-rm debian/DEBIAN/*~
 	fakeroot dpkg-deb --build debian
@@ -55,6 +71,29 @@ simbur-client.deb: ${SOURCES} debian/DEBIAN/*
 
 %.gz : %
 	gzip --best --to-stdout $? >$@
+
+############
+#
+# A tar file for Mac, peor es nada
+#
+############
+LAUNCHD_DIR=${DESTDIR}/Library/LaunchDaemons
+
+mac: simbur-client.tar.gz
+
+simbur-client.tar.gz: ${SOURCES} ca.jadesystems.simburd.plist
+	make DESTDIR=osx TARGET_OS=Darwin install
+	cd osx; tar -c -z --owner=root --group=root -f ../$@ ./*
+
+%.plist : %
+	cp $? $@
+	chmod 600 $@
+
+############
+#
+# Miscellaneous
+#
+############
 
 debug:
 	echo "'${man5dir}'"

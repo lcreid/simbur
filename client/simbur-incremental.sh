@@ -32,9 +32,19 @@ if [ ! -d $LOG_DIR ]; then
     fi
   fi
 
+# Some of the arguments to rsync are OS-dependent, or version dependent, or both.
+case `uname` in
+#  Darwin) ATTRIBUTES_FLAGS="--extended-attributes" ;;
+  Darwin) ATTRIBUTES_FLAGS="--acls --xattrs" ;;
+  Linux) ATTRIBUTES_FLAGS="--acls --xattrs" ;;
+  *) echo "Operating system `uname` not supported."
+    exit 1;;
+  esac
+
 
 # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
-rsync -vaAX \
+rsync -va \
+  $ATTRIBUTES_FLAGS \
   --delete \
   --delete-excluded \
   --exclude-from=$EXCLUDES \
