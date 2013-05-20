@@ -9,7 +9,6 @@ man5dir=$(mandir)/man5
 sysconfdir=${DESTDIR}/etc
 SIMBUR_CONF_DIR=${sysconfdir}/simbur
 TARGET_OS?=$(shell "uname")
-LOGROTATE_DIR=${sysconfdir}/logrotate.d
 
 .SECONDEXPANSION:
 
@@ -20,20 +19,23 @@ MAN5FILES=simbur-client.conf.5
 INSTALLED_EXECUTABLES=${EXECUTABLES:%=${bindir}/%}
 INSTALLED_MANPAGES=${MAN1FILES:%=${man1dir}/%.gz} ${MAN5FILES:%=${man5dir}/%.gz}
 INSTALLED_CONFIG_FILES=${SIMBUR_CONF_DIR}/exclude.conf \
-${SIMBUR_CONF_DIR}/simbur-client.conf \
-${LOGROTATE_DIR}/simbur-client-logrotate.conf
+${SIMBUR_CONF_DIR}/simbur-client.conf
+
+SOURCES=*.sh *.1 *.5 *.conf *.plist makefile
 
 ifeq (Darwin, ${TARGET_OS})
 	INIT_DIR=${DESTDIR}/Library/LaunchDaemons
 	INSTALLED_CONFIG_FILES+=$(INIT_DIR)/ca.jadesystems.simburd.plist
+	LOGROTATE_DIR=${sysconfdir}/newsyslog.d
+	INSTALLED_CONFIG_FILES+=${LOGROTATE_DIR}/simbur-client-newsyslog.conf
 else ifeq (Linux, ${TARGET_OS})
 	INIT_DIR=${sysconfdir}/init
 	INSTALLED_CONFIG_FILES+=$(INIT_DIR)/simburd.conf
+	LOGROTATE_DIR=${sysconfdir}/logrotate.d
+	INSTALLED_CONFIG_FILES+=${LOGROTATE_DIR}/simbur-client-logrotate.conf
 else
 	$(error "Operating system " ${TARGET_OS} " not supported."
 endif
-
-SOURCES=*.sh *.1 *.5 *.conf *.plist makefile
 
 all: ${EXECUTABLES}
 

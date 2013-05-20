@@ -1,6 +1,7 @@
 #!/bin/bash
 
 . /etc/simbur/simbur-server.conf
+syslog="logger -t simburd"
 
 USAGE="Usage: simbur-server enroll-host client-hostname | start-incremental | finish-backup | prune-backups #[dw]"
 
@@ -75,7 +76,7 @@ function prune_backups()
 {
   NO_PURGE_WINDOW=${1:-$NO_PURGE_WINDOW}
   
-  #  echo No purge window: $NO_PURGE_WINDOW
+  # echo No purge window: $NO_PURGE_WINDOW
   
   # TODO: Make this work for month, year
   SECONDS_PER_DAY=86400
@@ -87,16 +88,19 @@ function prune_backups()
   
   NO_PURGE_WINDOW_S=$(( `date +%s` - $NO_PURGE_WINDOW_S ))
     
-  #echo No purge seconds $NO_PURGE_WINDOW_S
+  # echo No purge seconds: $NO_PURGE_WINDOW_S
   
   DELETE_BEFORE=`date +%Y%m%d000000 --date=@$NO_PURGE_WINDOW_S`
   
-  #echo $DELETE_BEFORE
+  # echo Delete before: $DELETE_BEFORE
   
-  for d in $BACKUP_ROOT/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*; do
-    # echo $d, $DELETE_BEFORE
+  # This next line is tricky.
+  # I decided elsewhere that the backup files go in the home directory, so the
+  # following should be correct. But it also makes it more complicated to test.
+  for d in ~/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*; do
+    # echo File, Time: $d, $DELETE_BEFORE
     if [[ -d $d && `basename $d` < $DELETE_BEFORE ]] ; then
-      echo "Purging $d"
+      $syslog "Purging $d"
       sudo rm -rf $d
       fi
     done
