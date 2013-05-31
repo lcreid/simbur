@@ -36,6 +36,8 @@ if [ ! -d $LOG_DIR ]; then
 case `uname` in
 #  Darwin) ATTRIBUTES_FLAGS="--extended-attributes" ;;
 #  Darwin) ATTRIBUTES_FLAGS="-E" ;;
+# Backup Bouncer does this in test: flags="-avNHAX --protect-args --fileflags --force-change --rsync-path=$rsync"
+# See: https://github.com/n8gray/Backup-Bouncer/blob/master/copiers.d/15-rsync-macports.cp
   Darwin) RSYNC_CMD="/opt/local/bin/rsync"
     ATTRIBUTES_FLAGS="--acls --xattrs" ;;
   Linux) RSYNC_CMD="rsync"
