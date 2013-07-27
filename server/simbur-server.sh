@@ -41,10 +41,10 @@ function enroll_host()
   ssh-keygen -q -t dsa -f $PRIVATE_KEYFILE -N ""
   
   CLIENT_PRIVATE_KEY=/etc/simbur/$(basename $PRIVATE_KEYFILE)
-  echo "Copy the following lines to $CLIENT_PRIVATE_KEY on the CLIENT."
-  cat $PRIVATE_KEYFILE
-  echo "Don't copy this line."
-  echo "Then type 'sudo chmod 600 $CLIENT_PRIVATE_KEY'"
+  # echo "Copy the following lines to $CLIENT_PRIVATE_KEY on the CLIENT."
+  # cat $PRIVATE_KEYFILE
+  # echo "Don't copy this line."
+  # echo "Then type 'sudo chmod 600 $CLIENT_PRIVATE_KEY'"
   
   PUBLIC_KEYFILE=$PRIVATE_KEYFILE.pub
   AUTHORIZED_KEYS=$SSH_DIR/authorized_keys
@@ -100,7 +100,7 @@ function prune_backups()
   for d in ~/[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]*; do
     # echo File, Time: $d, $DELETE_BEFORE
     if [[ -d $d && `basename $d` < $DELETE_BEFORE ]] ; then
-      $syslog "Purging $d"
+      $syslog "Client `who am i | cut -d' ' -f1` Pruning $d"
       sudo rm -rf $d
       fi
     done
