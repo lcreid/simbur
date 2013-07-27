@@ -27,8 +27,8 @@ function enroll_host()
   
   # Add the user to sudoers
   SUDOERS_FILE=/etc/sudoers.d/simbur-server-sudo-$BACKUP_USER
-  echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >$SUDOERS_FILES
-  chomod 440 $SUDOERS_FILE
+  echo "$BACKUP_USER ALL = NOPASSWD: BACKUP_PROGRAMS" >$SUDOERS_FILE
+  chmod 440 $SUDOERS_FILE
   
   # Create the key in the home directory of the new user
   # sudo to the backup user to get it in the right place

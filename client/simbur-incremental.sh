@@ -39,7 +39,7 @@ case `uname` in
 # Backup Bouncer does this in test: flags="-avNHAX --protect-args --fileflags --force-change --rsync-path=$rsync"
 # See: https://github.com/n8gray/Backup-Bouncer/blob/master/copiers.d/15-rsync-macports.cp
   Darwin) RSYNC_CMD="/opt/local/bin/rsync"
-    ATTRIBUTES_FLAGS="--acls --xattrs" ;;
+    ATTRIBUTES_FLAGS="-NHAX --fileflags --force-change" ;;
   Linux) RSYNC_CMD="rsync"
     ATTRIBUTES_FLAGS="--acls --xattrs" ;;
   *) echo "Operating system `uname` not supported."
