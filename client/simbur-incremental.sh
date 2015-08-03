@@ -73,6 +73,7 @@ exit 1 # bail with error for now.
 # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
 $RSYNC_CMD -va \
   $ATTRIBUTES_FLAGS \
+  --numeric_ids \
   --delete \
   --delete-excluded \
   --exclude-from=$EXCLUDES \
