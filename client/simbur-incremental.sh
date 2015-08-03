@@ -1,17 +1,31 @@
 #!/bin/bash
 
-. /etc/simbur/simbur-client.conf
+USAGE="Usage: `basename $0` -[fhi] -c CONFIG_FILE"
 
-USAGE="Usage: `basename $0` -[fhi]"
-
-while getopts hfi x ; do
+while getopts hfic: x ; do
   case $x in
-  f)  BACKUP_TYPE=full;;
-  h)  echo $USAGE
-      exit 0;;
-  i)  BACKUP_TYPE=;;
+    c)  CONFIG_FILE=$OPTARG;;
+    f)  BACKUP_TYPE=full;;
+    h)  echo $USAGE
+        exit 0;;
+    i)  BACKUP_TYPE=;;
   esac
 done
+
+CONFIG_FILE=${CONFIG_FILE-/etc/simbur/simbur-client.conf}
+. $CONFIG_FILE
+
+echo BACKUP_TARGET: $BACKUP_TARGET
+echo BACKUP_USER: $BACKUP_USER
+echo BACKUP_SOURCE: $BACKUP_SOURCE
+echo EXCLUDES: $EXCLUDES
+echo PRIVATE_KEYFILE: $PRIVATE_KEYFILE
+echo BACKUP_START_FILE: $BACKUP_START_FILE
+echo BACKUP_END_FILE: $BACKUP_END_FILE
+echo BACKUP_INTERVAL: $BACKUP_INTERVAL
+echo POLLING_INTERVAL: $POLLING_INTERVAL
+
+exit 1 # bail with error for now.
 
 START_TIME=`date +%s`
 
@@ -19,7 +33,7 @@ SNAPSHOT=`date +%Y%m%d%H%M%S%Z`
 SNAPSHOT_IN_PROGRESS=$SNAPSHOT-not-completed
 
 # Set up the incremental
-[ "$BACKUP_TYPE" = "full" ] || 
+[ "$BACKUP_TYPE" = "full" ] ||
   ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
     /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
 
@@ -63,7 +77,7 @@ $RSYNC_CMD -va \
 ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/simbur-server finish-backup $SNAPSHOT_IN_PROGRESS $SNAPSHOT
 
 # Delete any snapshots that are no longer of interest
-ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/simbur-server prune-backups 14 
+ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/simbur-server prune-backups 14
 
 END_TIME=`date +%s`
 DURATION=$(( $END_TIME - $START_TIME ))
@@ -72,4 +86,3 @@ DURATION=$(( $DURATION % 3600 ))
 MINUTES=$(( $DURATION  / 60 ))
 SECONDS=$(( $DURATION % 60 ))
 printf "Total job time: %02d:%02d:%02d\n" $HOURS $MINUTES $SECONDS
-
