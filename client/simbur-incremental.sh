@@ -3,7 +3,7 @@
 DEBUG_ECHO=echo
 #DEBUG_ECHO=/bin/true
 
-USAGE="Usage: `basename $0` -[fhi] -c CONFIG_FILE"
+USAGE="Usage: `basename $0` -[fhi] -c CONFIG_FILE [ls]"
 
 while getopts hfic: x ; do
   case $x in
@@ -14,6 +14,17 @@ while getopts hfic: x ; do
     i)  BACKUP_TYPE=;;
   esac
 done
+shift $((OPTIND-1))
+
+if [[ $# -gt 1 ]]; then
+  echo $USAGE >&2
+  exit 1
+elif [[ $# -eq 1 ]]; then
+  COMMAND=$1
+  shift
+fi
+
+$DEBUG_ECHO COMMAND: $COMMAND
 
 CONFIG_FILE=${CONFIG_FILE-/etc/simbur/simbur-client.conf}
 . $CONFIG_FILE
@@ -35,8 +46,8 @@ if [ ! -d $LOG_DIR ]; then
   if [ `mkdir -p $LOG_DIR` ]; then
     echo "`basename $0`: can\'t create log directory" >&2
     exit 1
-    fi
   fi
+fi
 
 START_TIME=`date +%s`
 
@@ -54,34 +65,46 @@ case `uname` in
   Darwin) RSYNC_CMD="/opt/local/bin/rsync"
     ATTRIBUTES_FLAGS="-NHAX --fileflags --force-change" ;;
   Linux) RSYNC_CMD="rsync"
-    ATTRIBUTES_FLAGS="--acls --xattrs" ;;
+    ATTRIBUTES_FLAGS="$ACLS --xattrs" ;;
   *) echo "`basename $0`: Operating system `uname` not supported." >&2
     exit 1;;
-  esac
+esac
 
 $DEBUG_ECHO RSYNC_CMD: $RSYNC_CMD
 $DEBUG_ECHO ATTRIBUTES_FLAGS: $ATTRIBUTES_FLAGS
 
-exit 1 # bail with error for now.
+case "$COMMAND" in
+  ls) echo Doing ls
+    $RSYNC_CMD rsync://admin@$BACKUP_TARGET
+    exit $?;;
+  "") $DEBUG_ECHO No command;;
+  *) echo $USAGE >&2
+    exit 1;;
+  esac
 
 # Set up the incremental
-[ "$BACKUP_TYPE" = "full" ] ||
-  ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
-    /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
+# [ "$BACKUP_TYPE" = "full" ] ||
+#   ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
+#     /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
 
-
+$DEBUG_ECHO Starting rsync
 # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
 $RSYNC_CMD -va \
   $ATTRIBUTES_FLAGS \
-  --numeric_ids \
+  --numeric-ids \
   --delete \
   --delete-excluded \
   --exclude-from=$EXCLUDES \
-  --rsync-path="sudo rsync" \
-  --rsh="ssh -i $PRIVATE_KEYFILE" \
   --log-file $LOG_DIR/$SNAPSHOT.log \
   $BACKUP_SOURCE \
-  $BACKUP_USER@$BACKUP_TARGET:$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>&1
+  rsync://admin@$BACKUP_TARGET/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>&1
+
+  # --rsync-path="sudo rsync" \
+  # --rsh="ssh -i $PRIVATE_KEYFILE" \
+
+$DEBUG_ECHO Finished rsync
+
+exit 1 # bail with error for now.
 
 # Rename the snapshot
 ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/simbur-server finish-backup $SNAPSHOT_IN_PROGRESS $SNAPSHOT

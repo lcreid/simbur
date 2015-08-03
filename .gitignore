@@ -12,6 +12,7 @@ client/simbur-full
 client/simbur-incremental
 client/simburd
 client/test-simbur-client.conf
+client/test-exclude.conf
 server/debian/*
 !server/debian/DEBIAN
 osx/
