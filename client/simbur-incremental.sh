@@ -1,5 +1,8 @@
 #!/bin/bash
 
+DEBUG_ECHO=echo
+#DEBUG_ECHO=/bin/true
+
 USAGE="Usage: `basename $0` -[fhi] -c CONFIG_FILE"
 
 while getopts hfic: x ; do
@@ -15,37 +18,32 @@ done
 CONFIG_FILE=${CONFIG_FILE-/etc/simbur/simbur-client.conf}
 . $CONFIG_FILE
 
-echo BACKUP_TARGET: $BACKUP_TARGET
-echo BACKUP_USER: $BACKUP_USER
-echo BACKUP_SOURCE: $BACKUP_SOURCE
-echo EXCLUDES: $EXCLUDES
-echo PRIVATE_KEYFILE: $PRIVATE_KEYFILE
-echo BACKUP_START_FILE: $BACKUP_START_FILE
-echo BACKUP_END_FILE: $BACKUP_END_FILE
-echo BACKUP_INTERVAL: $BACKUP_INTERVAL
-echo POLLING_INTERVAL: $POLLING_INTERVAL
+$DEBUG_ECHO BACKUP_TARGET: $BACKUP_TARGET
+$DEBUG_ECHO BACKUP_USER: $BACKUP_USER
+$DEBUG_ECHO BACKUP_SOURCE: $BACKUP_SOURCE
+$DEBUG_ECHO EXCLUDES: $EXCLUDES
+$DEBUG_ECHO PRIVATE_KEYFILE: $PRIVATE_KEYFILE
+$DEBUG_ECHO BACKUP_START_FILE: $BACKUP_START_FILE
+$DEBUG_ECHO BACKUP_END_FILE: $BACKUP_END_FILE
+$DEBUG_ECHO BACKUP_INTERVAL: $BACKUP_INTERVAL
+$DEBUG_ECHO POLLING_INTERVAL: $POLLING_INTERVAL
 
 LOG_DIR=${LOG_DIR-/var/log/simbur}
-echo LOG_DIR: $LOG_DIR
+$DEBUG_ECHO LOG_DIR: $LOG_DIR
 
 if [ ! -d $LOG_DIR ]; then
   if [ `mkdir -p $LOG_DIR` ]; then
-    echo "`basename $0: can\'t create log directory >&2`"
+    echo "`basename $0`: can\'t create log directory" >&2
     exit 1
     fi
   fi
-
-exit 1 # bail with error for now.
 
 START_TIME=`date +%s`
 
 SNAPSHOT=`date +%Y%m%d%H%M%S%Z`
 SNAPSHOT_IN_PROGRESS=$SNAPSHOT-not-completed
-
-# Set up the incremental
-[ "$BACKUP_TYPE" = "full" ] ||
-  ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
-    /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
+$DEBUG_ECHO SNAPSHOT: $SNAPSHOT
+$DEBUG_ECHO SNAPSHOT_IN_PROGRESS: $SNAPSHOT_IN_PROGRESS
 
 # Some of the arguments to rsync are OS-dependent, or version dependent, or both.
 case `uname` in
@@ -57,9 +55,19 @@ case `uname` in
     ATTRIBUTES_FLAGS="-NHAX --fileflags --force-change" ;;
   Linux) RSYNC_CMD="rsync"
     ATTRIBUTES_FLAGS="--acls --xattrs" ;;
-  *) echo "Operating system `uname` not supported."
+  *) echo "`basename $0`: Operating system `uname` not supported." >&2
     exit 1;;
   esac
+
+$DEBUG_ECHO RSYNC_CMD: $RSYNC_CMD
+$DEBUG_ECHO ATTRIBUTES_FLAGS: $ATTRIBUTES_FLAGS
+
+exit 1 # bail with error for now.
+
+# Set up the incremental
+[ "$BACKUP_TYPE" = "full" ] ||
+  ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
+    /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
 
 
 # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
