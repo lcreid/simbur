@@ -25,6 +25,16 @@ echo BACKUP_END_FILE: $BACKUP_END_FILE
 echo BACKUP_INTERVAL: $BACKUP_INTERVAL
 echo POLLING_INTERVAL: $POLLING_INTERVAL
 
+LOG_DIR=${LOG_DIR-/var/log/simbur}
+echo LOG_DIR: $LOG_DIR
+
+if [ ! -d $LOG_DIR ]; then
+  if [ `mkdir -p $LOG_DIR` ]; then
+    echo "`basename $0: can\'t create log directory >&2`"
+    exit 1
+    fi
+  fi
+
 exit 1 # bail with error for now.
 
 START_TIME=`date +%s`
@@ -36,15 +46,6 @@ SNAPSHOT_IN_PROGRESS=$SNAPSHOT-not-completed
 [ "$BACKUP_TYPE" = "full" ] ||
   ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
     /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
-
-LOG_DIR=/var/log/simbur
-
-if [ ! -d $LOG_DIR ]; then
-  if [ `mkdir -p $LOG_DIR` ]; then
-    echo "`basename $0: can\'t create log directory >&2`"
-    exit 1
-    fi
-  fi
 
 # Some of the arguments to rsync are OS-dependent, or version dependent, or both.
 case `uname` in

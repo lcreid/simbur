@@ -5,6 +5,13 @@
 test/
 client/debian/*
 !client/debian/DEBIAN
+client/test-logs/*
+client/test-backup-source/*
+client/simbur-enroll-client
+client/simbur-full
+client/simbur-incremental
+client/simburd
+client/test-simbur-client.conf
 server/debian/*
 !server/debian/DEBIAN
 osx/
