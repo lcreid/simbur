@@ -5,11 +5,27 @@ DEBUG_ECHO=echo
 
 USAGE="Usage: `basename $0` -[fhi] [-c CONFIG_FILE] [ls [file...]]"
 
+
+usage() {
+  echo $USAGE
+  cat <<-EOF
+    Commands are:
+
+    ls [file...]: List the files and directories at the backup target.
+    full: Do a full backup.
+    incremental: Do an incremental backup (default).
+    restore [-o] [-d restore-destination] [files...]: Restore files.
+      Default for files is the entire backup.
+      -o: Overwrite existing files.
+      -d: Restore to restore-destination. Default is /tmp.
+EOF
+}
+
 while getopts hfic: x ; do
   case $x in
     c)  CONFIG_FILE=$OPTARG;;
     f)  BACKUP_TYPE=full;;
-    h)  echo $USAGE
+    h)  usage
         exit 0;;
     i)  BACKUP_TYPE=;;
   esac
@@ -72,25 +88,51 @@ $DEBUG_ECHO ATTRIBUTES_FLAGS: $ATTRIBUTES_FLAGS
 
 
 
-function simbur-ls() {
+simbur-ls() {
   $RSYNC_CMD --password-file=$PASSWORD rsync://admin@$BACKUP_TARGET/"$1"
 }
 
-function simbur-last-backup() {
+simbur-last-backup() {
   simbur-ls "$1" | sort -k3,4 | tail -1
 }
 
-function simbur-last-directory() {
+simbur-last-directory() {
   simbur-last-backup "$1" | cut -c47-
 }
 
+restore() {
+  $DEBUG_ECHO restore "$*"
+  while getopts od: x ; do
+    case $x in
+      d)  RESTORE_DEST=$OPTARG;;
+      o)  OVERWRITE="true";;
+    esac
+  done
+  shift $((OPTIND-1))
 
+  if [ "$OVERWRITE" != "true" ]; then
+    for f in "$*"; do
+      if [ -x "$f" ]; then
+        echo "$f" exists. Use "-o" to allow overwrite. Exiting.
+        exit 1
+      fi
+    done
+  fi
+
+  for f in "$*"; do
+    $DEBUG_ECHO Restore: "$f" to ${RESTORE_DIR-$f}
+  done
+}
 
 case "$COMMAND" in
   ls) echo Doing ls
-    simbur-ls "$1"
+    simbur-ls "$*"
     exit $?;;
   "") $DEBUG_ECHO No command;;
+  full) BACKUP_TYPE=full
+    shift;;
+  restore) restore "$*"
+    exit $?;;
   *) echo $USAGE >&2
     exit 1;;
   esac
