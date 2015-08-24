@@ -100,14 +100,11 @@ case "$COMMAND" in
 #   ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
 #     /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
 
-COMPARE_DIR=`simbur-last-directory`
-$DEBUG_ECHO Compare directory: $COMPARE_DIR
+LINK_DIR=`simbur-last-directory`
+$DEBUG_ECHO LINK directory: $LINK_DIR
 
-if [ "$COMPARE_DIR" != . ]; then
-  LINK_DIR=$SNAPSHOT_IN_PROGRESS
-  $DEBUG_ECHO Link directory: $LINK_DIR
-
-  LINK_FLAGS="--compare-dir=\"$COMPARE_DIR\" --link-dir=\"$LINK_DIR\""
+if [ "$LINK_DIR" != . ]; then
+  LINK_FLAGS="--remote-option=--link-dest=../$LINK_DIR"
   $DEBUG_ECHO Link flags: $LINK_FLAGS
 fi
 
@@ -115,6 +112,7 @@ $DEBUG_ECHO Starting rsync
 # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
 $RSYNC_CMD -va \
   --password-file=$PASSWORD \
+  $LINK_FLAGS \
   $ATTRIBUTES_FLAGS \
   --numeric-ids \
   --delete \
