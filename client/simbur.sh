@@ -8,7 +8,7 @@ USAGE="Usage: `basename $0` -[fhi] [-c CONFIG_FILE] [ls [file...]]"
 
 usage() {
   echo $USAGE
-  cat <<-EOF
+  cat <<EOF
     Commands are:
 
     ls [file...]: List the files and directories at the backup target.
@@ -17,7 +17,8 @@ usage() {
     restore [-o] [-d restore-destination] [files...]: Restore files.
       Default for files is the entire backup.
       -o: Overwrite existing files.
-      -d: Restore to restore-destination. Default is /tmp.
+      -d: Restore to restore-destination. Default is to original location,
+          but you must specify -o if the location already exists.
 EOF
 }
 
@@ -100,8 +101,23 @@ simbur-last-directory() {
   simbur-last-backup "$1" | cut -c47-
 }
 
+rsync-restore() {
+  # $1 is source on backup server.
+  # $2 is destination on this machine.
+  # $3 if present is the backup generation to retrieve from.
+  GENERATION=${3-`simbur-last-directory`}
+  $RSYNC_CMD -va \
+    --password-file=$PASSWORD \
+    --super \
+    $ATTRIBUTES_FLAGS \
+    --numeric-ids \
+    rsync://admin@$BACKUP_TARGET/"$GENERATION"/"$1" \
+    "$2"
+}
+
 restore() {
-  $DEBUG_ECHO restore "$*"
+  $DEBUG_ECHO restore $# "$@"
+  local OPTIND
   while getopts od: x ; do
     case $x in
       d)  RESTORE_DEST=$OPTARG;;
@@ -110,28 +126,41 @@ restore() {
   done
   shift $((OPTIND-1))
 
-  if [ "$OVERWRITE" != "true" ]; then
-    for f in "$*"; do
-      if [ -x "$f" ]; then
-        echo "$f" exists. Use "-o" to allow overwrite. Exiting.
-        exit 1
-      fi
+  # If there's no file or directory specified to be restored
+  if [[ $# -le 1 ]]; then
+    RESTORE_DEST=${RESTORE_DEST-$BACKUP_SOURCE}
+    if [ "$OVERWRITE" != "true" ] && [ -e "$RESTORE_DEST" ]; then
+      echo "$RESTORE_DEST" exists. Use "-o" to allow overwrite. Exiting.
+      exit 1
+    fi
+    $DEBUG_ECHO Restore: all to $RESTORE_DEST
+    rsync-restore "" ${RESTORE_DEST-$f}
+  # there is a file or directory specified to be restored
+  else
+    if [ "$OVERWRITE" != "true" ]; then
+      for f in "$@"; do
+        if [ -e "$f" ]; then
+          echo "$f" exists. Use "-o" to allow overwrite. Exiting.
+          exit 1
+        fi
+      done
+    fi
+
+    for f in "$@"; do
+      $DEBUG_ECHO Restore: "$f" to ${RESTORE_DEST-$f}
+      rsync-restore "$f" ${RESTORE_DEST-$f}
     done
   fi
-
-  for f in "$*"; do
-    $DEBUG_ECHO Restore: "$f" to ${RESTORE_DIR-$f}
-  done
 }
 
 case "$COMMAND" in
   ls) echo Doing ls
-    simbur-ls "$*"
+    simbur-ls "$@"
     exit $?;;
   "") $DEBUG_ECHO No command;;
   full) BACKUP_TYPE=full
     shift;;
-  restore) restore "$*"
+  restore) restore "$@"
     exit $?;;
   *) echo $USAGE >&2
     exit 1;;
