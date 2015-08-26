@@ -3,7 +3,7 @@
 DEBUG_ECHO=echo
 #DEBUG_ECHO=/bin/true
 
-USAGE="Usage: `basename $0` -[fhi] [-c CONFIG_FILE] [ls [file...]]"
+USAGE="Usage: `basename $0` -[fhi] [-c CONFIG_FILE] [command [arguments...]]"
 
 
 usage() {
@@ -160,9 +160,11 @@ case "$COMMAND" in
   "") $DEBUG_ECHO No command;;
   full) BACKUP_TYPE=full
     shift;;
+  incremental) BACKUP_TYPE=
+    shift;;
   restore) restore "$@"
     exit $?;;
-  *) echo $USAGE >&2
+  *) usage
     exit 1;;
   esac
 
@@ -170,6 +172,11 @@ case "$COMMAND" in
 # [ "$BACKUP_TYPE" = "full" ] ||
 #   ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
 #     /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
+
+if [ ${BACKUP_SOURCE:0:1} != "/" ]; then
+  echo "Backup source must be an absolute file or directory path (must start with '/')." >&2
+  exit 1
+fi
 
 LINK_DIR=`simbur-last-directory`
 $DEBUG_ECHO LINK directory: $LINK_DIR
