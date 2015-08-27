@@ -22,13 +22,16 @@ usage() {
 EOF
 }
 
+# Default backup type
+BACKUP_TYPE=incremental
+
 while getopts hfic: x ; do
   case $x in
     c)  CONFIG_FILE=$OPTARG;;
     f)  BACKUP_TYPE=full;;
     h)  usage
         exit 0;;
-    i)  BACKUP_TYPE=;;
+    i)  BACKUP_TYPE=incremental;;
   esac
 done
 shift $((OPTIND-1))
@@ -63,13 +66,6 @@ if [ ! -d $LOG_DIR ]; then
   fi
 fi
 
-START_TIME=`date +%s`
-
-SNAPSHOT=`date +%Y%m%d%H%M%S%Z`
-SNAPSHOT_IN_PROGRESS=$SNAPSHOT-not-completed
-$DEBUG_ECHO SNAPSHOT: $SNAPSHOT
-$DEBUG_ECHO SNAPSHOT_IN_PROGRESS: $SNAPSHOT_IN_PROGRESS
-
 # Some of the arguments to rsync are OS-dependent, or version dependent, or both.
 case `uname` in
 #  Darwin) ATTRIBUTES_FLAGS="--extended-attributes" ;;
@@ -101,11 +97,65 @@ simbur-last-directory() {
   simbur-last-backup "$1" | cut -c47-
 }
 
+back-up() {
+  if [ ${BACKUP_SOURCE:0:1} != "/" ]; then
+    echo "Backup source must be an absolute file or directory path (must start with '/')." >&2
+    return 1
+  fi
+
+  START_TIME=`date +%s`
+
+  SNAPSHOT=`date +%Y%m%d%H%M%S%Z`
+  SNAPSHOT_IN_PROGRESS=$SNAPSHOT
+  $DEBUG_ECHO SNAPSHOT: $SNAPSHOT
+  $DEBUG_ECHO SNAPSHOT_IN_PROGRESS: $SNAPSHOT_IN_PROGRESS
+
+  if [ "$BACKUP_TYPE" != "full" ] && [ "$LINK_DIR" != . ]; then
+    LINK_DIR=`simbur-last-directory`
+    $DEBUG_ECHO LINK directory: $LINK_DIR
+
+    LINK_FLAGS="--remote-option=--link-dest=../$LINK_DIR"
+    $DEBUG_ECHO Link flags: $LINK_FLAGS
+  fi
+
+  $DEBUG_ECHO Starting rsync
+  # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
+  # TODO: Check --super and --fake-super and changing owner.
+  $RSYNC_CMD -va \
+    --password-file=$PASSWORD \
+    $LINK_FLAGS \
+    $ATTRIBUTES_FLAGS \
+    --numeric-ids \
+    --delete \
+    --delete-excluded \
+    --exclude-from=$EXCLUDES \
+    --log-file $LOG_DIR/$SNAPSHOT.log \
+    $BACKUP_SOURCE \
+    rsync://admin@$BACKUP_TARGET/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>&1
+
+  RETURN=$?
+    # --rsync-path="sudo rsync" \
+    # --rsh="ssh -i $PRIVATE_KEYFILE" \
+
+  $DEBUG_ECHO Finished rsync
+
+  END_TIME=`date +%s`
+  DURATION=$(( $END_TIME - $START_TIME ))
+  HOURS=$(( $DURATION / 3600 ))
+  DURATION=$(( $DURATION % 3600 ))
+  MINUTES=$(( $DURATION  / 60 ))
+  SECONDS=$(( $DURATION % 60 ))
+  printf "Total job time: %02d:%02d:%02d\n" $HOURS $MINUTES $SECONDS
+
+  return $RETURN
+}
+
 rsync-restore() {
   # $1 is source on backup server.
   # $2 is destination on this machine.
   # $3 if present is the backup generation to retrieve from.
   GENERATION=${3-`simbur-last-directory`}
+  # TODO: Check --super and --fake-super and changing owner.
   $RSYNC_CMD -va \
     --password-file=$PASSWORD \
     --super \
@@ -131,7 +181,7 @@ restore() {
     RESTORE_DEST=${RESTORE_DEST-$BACKUP_SOURCE}
     if [ "$OVERWRITE" != "true" ] && [ -e "$RESTORE_DEST" ]; then
       echo "$RESTORE_DEST" exists. Use "-o" to allow overwrite. Exiting.
-      exit 1
+      return 1
     fi
     $DEBUG_ECHO Restore: all to $RESTORE_DEST
     rsync-restore "" ${RESTORE_DEST-$f}
@@ -141,7 +191,7 @@ restore() {
       for f in "$@"; do
         if [ -e "$f" ]; then
           echo "$f" exists. Use "-o" to allow overwrite. Exiting.
-          exit 1
+          return 1
         fi
       done
     fi
@@ -149,74 +199,27 @@ restore() {
     for f in "$@"; do
       $DEBUG_ECHO Restore: "$f" to ${RESTORE_DEST-$f}
       rsync-restore "$f" ${RESTORE_DEST-$f}
+      # TODO: Report errors correctly from restore
     done
   fi
 }
 
+
+
 case "$COMMAND" in
   ls) echo Doing ls
     simbur-ls "$@"
-    exit $?;;
-  "") $DEBUG_ECHO No command;;
-  full) BACKUP_TYPE=full
-    shift;;
-  incremental) BACKUP_TYPE=
-    shift;;
+    RETURN=$?;;
+  full) BACKUP_TYPE=full back-up "$@"
+    RETURN=$?;;
+  "") back-up "$@"
+    RETURN=$?;;
+  incremental) BACKUP_TYPE=incremental back-up "$@"
+    RETURN=$?;;
   restore) restore "$@"
-    exit $?;;
+    RETURN=$?;;
   *) usage
     exit 1;;
   esac
 
-# Set up the incremental
-# [ "$BACKUP_TYPE" = "full" ] ||
-#   ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET \
-#     /usr/bin/simbur-server start-incremental $SNAPSHOT_IN_PROGRESS
-
-if [ ${BACKUP_SOURCE:0:1} != "/" ]; then
-  echo "Backup source must be an absolute file or directory path (must start with '/')." >&2
-  exit 1
-fi
-
-LINK_DIR=`simbur-last-directory`
-$DEBUG_ECHO LINK directory: $LINK_DIR
-
-if [ "$LINK_DIR" != . ]; then
-  LINK_FLAGS="--remote-option=--link-dest=../$LINK_DIR"
-  $DEBUG_ECHO Link flags: $LINK_FLAGS
-fi
-
-$DEBUG_ECHO Starting rsync
-# Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
-$RSYNC_CMD -va \
-  --password-file=$PASSWORD \
-  $LINK_FLAGS \
-  $ATTRIBUTES_FLAGS \
-  --numeric-ids \
-  --delete \
-  --delete-excluded \
-  --exclude-from=$EXCLUDES \
-  --log-file $LOG_DIR/$SNAPSHOT.log \
-  $BACKUP_SOURCE \
-  rsync://admin@$BACKUP_TARGET/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>&1
-
-  # --rsync-path="sudo rsync" \
-  # --rsh="ssh -i $PRIVATE_KEYFILE" \
-
-$DEBUG_ECHO Finished rsync
-
-exit 1 # bail with error for now.
-
-# Rename the snapshot
-ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/simbur-server finish-backup $SNAPSHOT_IN_PROGRESS $SNAPSHOT
-
-# Delete any snapshots that are no longer of interest
-ssh -i $PRIVATE_KEYFILE $BACKUP_USER@$BACKUP_TARGET /usr/bin/simbur-server prune-backups 14
-
-END_TIME=`date +%s`
-DURATION=$(( $END_TIME - $START_TIME ))
-HOURS=$(( $DURATION / 3600 ))
-DURATION=$(( $DURATION % 3600 ))
-MINUTES=$(( $DURATION  / 60 ))
-SECONDS=$(( $DURATION % 60 ))
-printf "Total job time: %02d:%02d:%02d\n" $HOURS $MINUTES $SECONDS
+exit ${RETURN:-0}
