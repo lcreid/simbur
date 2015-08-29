@@ -97,6 +97,12 @@ simbur-last-directory() {
   simbur-last-backup "$1" | cut -c47-
 }
 
+password-flag() {
+  if [ ! -z "$PASSWORD" ]; then
+    echo -n --password-file="$PASSWORD"
+  fi
+}
+
 back-up() {
   if [ ${BACKUP_SOURCE:0:1} != "/" ]; then
     echo "Backup source must be an absolute file or directory path (must start with '/')." >&2
@@ -122,7 +128,7 @@ back-up() {
   # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
   # TODO: Check --super and --fake-super and changing owner.
   $RSYNC_CMD -va \
-    --password-file=$PASSWORD \
+    `password-flag` \
     $LINK_FLAGS \
     $ATTRIBUTES_FLAGS \
     --numeric-ids \
@@ -157,7 +163,7 @@ rsync-restore() {
   GENERATION=${3-`simbur-last-directory`}
   # TODO: Check --super and --fake-super and changing owner.
   $RSYNC_CMD -va \
-    --password-file=$PASSWORD \
+    `password-flag` \
     --super \
     $ATTRIBUTES_FLAGS \
     --numeric-ids \
