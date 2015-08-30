@@ -12,7 +12,7 @@ TARGET_OS?=$(shell "uname")
 
 .SECONDEXPANSION:
 
-EXECUTABLES=simbur-full simbur-incremental simburd simbur-enroll-client
+EXECUTABLES=simbur-full simbur-incremental simburd simbur-enroll-client simbur
 MAN1FILES=${EXECUTABLES:%=%.1}
 MAN5FILES=simbur-client.conf.5
 
@@ -44,7 +44,7 @@ ${INSTALLED_EXECUTABLES} \
 ${INSTALLED_MANPAGES} \
 ${INSTALLED_CONFIG_FILES}
 
-uninstall: 
+uninstall:
 	-rm ${INSTALLED_EXECUTABLES} ${INSTALLED_MANPAGES} ${INSTALLED_CONFIG_FILES}
 
 ${INSTALLED_EXECUTABLES} \
@@ -52,7 +52,7 @@ ${INSTALLED_MANPAGES} \
 ${INSTALLED_CONFIG_FILES}: $$(@F)
 	cp $? $@
 
-$(INSTALLED_INIT_FILES): 
+$(INSTALLED_INIT_FILES):
 
 config: ${SIMBUR_CONF_DIR} ${INSTALLED_CONFIG_FILES}
 
@@ -115,5 +115,4 @@ ${docdir} \
 ${LOGROTATE_DIR}
 
 ${bindir} ${SIMBUR_CONF_DIR} ${INIT_DIR} ${man1dir} ${man5dir} ${docdir} ${LOGROTATE_DIR}:
-	mkdir -p $@ 
-
+	mkdir -p $@

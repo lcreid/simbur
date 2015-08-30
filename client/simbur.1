@@ -1,0 +1,38 @@
+.\" Process this file with
+.\" groff -man -Tascii simbur.1
+.\"
+.TH SIMBUR 1 "AUGUST 2015" "Jade Systems Inc" "User Manuals"
+.SH NAME
+simbur \- the SIMple Back Up and Recovery client
+.SH SYNOPSIS
+.B /usr/bin/simbur -[fhi] [-c CONFIG_FILE] [command [arguments...]]
+.SH DESCRIPTION
+.B simbur full
+creates a copy of all files and directories below the BACKUP_SOURCE defined in
+.BR client-conf (5).
+.B simbur incremental
+(the default) creates a copy of all files and directories that have changed since the last
+full or incremental backup. The incremental backup is a complete copy
+of all the files and directories below the BACKUP_SOURCE, but only requires
+space for the files that have changed.
+
+.B simbur-incremental
+works by creating a duplicate directory tree using hard links to the previous
+backup, then creating new files only for those files that have changed.
+
+These programs must be run with superuser privileges if you want to back up
+files owned by someone other than the user running
+.BR simbur.
+.SH FILES
+.I /etc/simbur/client.conf
+.RS
+The client-side configuration file. See
+.BR client.conf (5)
+for further details.
+.SH BUGS
+See the issues log at: https://github.com/lcreid/simbur/issues
+.SH AUTHOR
+Larry Reid <larry.reid@jadesystems.ca>
+.SH "SEE ALSO"
+.BR simbur-enroll-client (1),
+.BR simburd (1)

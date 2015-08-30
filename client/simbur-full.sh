@@ -1,4 +1,3 @@
 #!/bin/bash
 
-/usr/bin/simbur-incremental -f
-
+/usr/bin/simbur full "$@"

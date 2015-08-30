@@ -46,6 +46,7 @@ $DEBUG_ECHO COMMAND: $COMMAND
 CONFIG_FILE=${CONFIG_FILE-/etc/simbur/simbur-client.conf}
 . $CONFIG_FILE
 
+$DEBUG_ECHO REMOTE_USER: $REMOTE_USER
 $DEBUG_ECHO BACKUP_TARGET: $BACKUP_TARGET
 $DEBUG_ECHO BACKUP_USER: $BACKUP_USER
 $DEBUG_ECHO BACKUP_SOURCE: $BACKUP_SOURCE
@@ -86,7 +87,7 @@ $DEBUG_ECHO ATTRIBUTES_FLAGS: $ATTRIBUTES_FLAGS
 
 
 simbur-ls() {
-  $RSYNC_CMD --password-file=$PASSWORD rsync://admin@$BACKUP_TARGET/"$1"
+  $RSYNC_CMD --password-file=$PASSWORD rsync://$REMOTE_USER@$BACKUP_TARGET/"$1"
 }
 
 simbur-last-backup() {
@@ -137,7 +138,7 @@ back-up() {
     --exclude-from=$EXCLUDES \
     --log-file $LOG_DIR/$SNAPSHOT.log \
     $BACKUP_SOURCE \
-    rsync://admin@$BACKUP_TARGET/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>&1
+    rsync://$REMOTE_USER@$BACKUP_TARGET/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>&1
 
   RETURN=$?
     # --rsync-path="sudo rsync" \
@@ -167,7 +168,7 @@ rsync-restore() {
     --super \
     $ATTRIBUTES_FLAGS \
     --numeric-ids \
-    rsync://admin@$BACKUP_TARGET/"$GENERATION"/"$1" \
+    rsync://$REMOTE_USER@$BACKUP_TARGET/"$GENERATION"/"$1" \
     "$2"
 }
 
