@@ -1,7 +1,7 @@
 #!/bin/bash
 
-DEBUG_ECHO=echo
-#DEBUG_ECHO=/bin/true
+#DEBUG_ECHO=echo
+DEBUG_ECHO=/bin/true
 
 USAGE="Usage: `basename $0` -[fhi] [-c CONFIG_FILE] [command [arguments...]]"
 
@@ -95,7 +95,8 @@ simbur-last-backup() {
 }
 
 simbur-last-directory() {
-  simbur-last-backup "$1" | cut -c47-
+  # One small version number changes where the file name is in the rsync output.
+  simbur-last-backup "$1" | tr -s ' ' | cut -d ' ' -f5
 }
 
 password-flag() {
@@ -117,10 +118,9 @@ back-up() {
   $DEBUG_ECHO SNAPSHOT: $SNAPSHOT
   $DEBUG_ECHO SNAPSHOT_IN_PROGRESS: $SNAPSHOT_IN_PROGRESS
 
+  LINK_DIR=`simbur-last-directory`
+  $DEBUG_ECHO LINK directory: $LINK_DIR
   if [ "$BACKUP_TYPE" != "full" ] && [ "$LINK_DIR" != . ]; then
-    LINK_DIR=`simbur-last-directory`
-    $DEBUG_ECHO LINK directory: $LINK_DIR
-
     LINK_FLAGS="--remote-option=--link-dest=../$LINK_DIR"
     $DEBUG_ECHO Link flags: $LINK_FLAGS
   fi
@@ -137,10 +137,15 @@ back-up() {
     --delete-excluded \
     --exclude-from=$EXCLUDES \
     --log-file $LOG_DIR/$SNAPSHOT.log \
+    --stats \
     $BACKUP_SOURCE \
     rsync://$REMOTE_USER@$BACKUP_TARGET/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>&1
 
   RETURN=$?
+
+  if [[ $RETURN -ne 0 ]]; then
+    echo simbur: Backup failed. See $LOG_DIR/simbur.log for messages.
+  fi
     # --rsync-path="sudo rsync" \
     # --rsh="ssh -i $PRIVATE_KEYFILE" \
 
@@ -152,7 +157,7 @@ back-up() {
   DURATION=$(( $DURATION % 3600 ))
   MINUTES=$(( $DURATION  / 60 ))
   SECONDS=$(( $DURATION % 60 ))
-  printf "Total job time: %02d:%02d:%02d\n" $HOURS $MINUTES $SECONDS
+  printf "simbur: Total job time: %02d:%02d:%02d\n" $HOURS $MINUTES $SECONDS
 
   return $RETURN
 }
