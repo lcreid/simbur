@@ -1,14 +1,35 @@
 #!/bin/bash
 
 #DEBUG_ECHO=echo
-DEBUG_ECHO=/bin/true
+DEBUG_ECHO=debug_echo
 
-USAGE="Usage: `basename $0` -[fhi] [-c CONFIG_FILE] [command [arguments...]]"
+verbose_echo() {
+  if [ "$VERBOSE" == 1 ]; then
+    echo "$@"
+  fi
+}
 
+debug_echo() {
+  if [ "$DEBUG" == 1 ]; then
+    echo "$@"
+  else
+    verbose_echo "$@"
+  fi
+}
+
+
+USAGE="Usage: `basename $0` -[fhiv] [-c CONFIG_FILE] [command [arguments...]]"
 
 usage() {
   echo $USAGE
   cat <<EOF
+    -c  use CONFIG_FILE for config, instead of /etc/simbur/simbur_client.conf.
+    -f  Full backup.
+    -h  Print help (this message).
+    -i  Incremental backup (default).
+    -n  Do a dry run. Has no effect with ls command.
+    -v  Verbose.
+
     Commands are:
 
     ls [file...]: List the files and directories at the backup target.
@@ -25,13 +46,15 @@ EOF
 # Default backup type
 BACKUP_TYPE=incremental
 
-while getopts hfic: x ; do
+while getopts fhinvc: x ; do
   case $x in
     c)  CONFIG_FILE=$OPTARG;;
     f)  BACKUP_TYPE=full;;
     h)  usage
         exit 0;;
     i)  BACKUP_TYPE=incremental;;
+    n)  DRY_RUN=--dry-run;;
+    v)  VERBOSE=1;;
   esac
 done
 shift $((OPTIND-1))
@@ -91,7 +114,7 @@ simbur-ls() {
 }
 
 simbur-last-backup() {
-  simbur-ls "$1" | sort -k3,4 | tail -1
+  simbur-ls "$1" | sort -nk5 | tail -1
 }
 
 simbur-last-directory() {
@@ -123,6 +146,9 @@ back-up() {
   if [ "$BACKUP_TYPE" != "full" ] && [ "$LINK_DIR" != . ]; then
     LINK_FLAGS="--remote-option=--link-dest=../$LINK_DIR"
     $DEBUG_ECHO Link flags: $LINK_FLAGS
+    verbose_echo "$0: Starting incremental backup from $LINK_DIR."
+  else
+    verbose_echo "$0: Starting full backup."
   fi
 
   $DEBUG_ECHO Starting rsync
@@ -130,6 +156,7 @@ back-up() {
   # TODO: Check --super and --fake-super and changing owner.
   $RSYNC_CMD -va \
     `password-flag` \
+    $DRY_RUN \
     $LINK_FLAGS \
     $ATTRIBUTES_FLAGS \
     --numeric-ids \
@@ -170,6 +197,7 @@ rsync-restore() {
   # TODO: Check --super and --fake-super and changing owner.
   $RSYNC_CMD -va \
     `password-flag` \
+    $DRY_RUN \
     --super \
     $ATTRIBUTES_FLAGS \
     --numeric-ids \
@@ -219,7 +247,7 @@ restore() {
 
 
 case "$COMMAND" in
-  ls) echo Doing ls
+  ls) $DEBUG_ECHO Doing ls
     simbur-ls "$@"
     RETURN=$?;;
   full) BACKUP_TYPE=full back-up "$@"
