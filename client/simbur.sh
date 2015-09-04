@@ -33,6 +33,7 @@ usage() {
     Commands are:
 
     ls [file...]: List the files and directories at the backup target.
+    enroll: Create target for a new backup (e.g. a new machine).
     full: Do a full backup.
     incremental: Do an incremental backup (default).
     restore [-o] [-d restore-destination] [files...]: Restore files.
@@ -244,12 +245,32 @@ restore() {
   fi
 }
 
+enroll() {
+  debug_echo "$@"
+  target=/tmp/"${1:-$BACKUP_USER}"
+  debug_echo "$target"
+
+  mkdir $target
+  debug_echo $REMOTE_USER@$BACKUP_HOST/$BACKUP_ROOT
+
+  $RSYNC_CMD -d \
+    `password-flag` \
+    $DRY_RUN \
+    $ATTRIBUTES_FLAGS \
+    --numeric-ids \
+    $target \
+    rsync://$REMOTE_USER@$BACKUP_HOST/$BACKUP_ROOT
+
+  rm -rf $target
+}
+
 
 
 case "$COMMAND" in
   ls) $DEBUG_ECHO Doing ls
     simbur-ls "$@"
     RETURN=$?;;
+  enroll) enroll "$@";;
   full) BACKUP_TYPE=full back-up "$@"
     RETURN=$?;;
   "") back-up "$@"

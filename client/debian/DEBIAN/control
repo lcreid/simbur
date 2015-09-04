@@ -4,8 +4,8 @@ Section: admin
 Installed-Size:
 Maintainer: Larry Reid <lcreid@jadesystems.ca>
 Architecture: all
-Version: 2.0.0-pre3
-Depends: rsync (>= 3)
+Version: 2.0.0-pre5
+Depends: rsync (>= 3.1.0)
 Description: SIMple BackUp and Recovery client. Backs up your
   computer without a lot of hassle, and resilient to unscheduled
   events. It's therefore good for desktops and laptops that get
