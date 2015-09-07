@@ -195,11 +195,10 @@ rsync-restore() {
   # $2 is destination on this machine.
   # $3 if present is the backup generation to retrieve from.
   GENERATION=${3-`simbur-last-directory`}
-  # TODO: Check --super and --fake-super and changing owner.
+
   $RSYNC_CMD -va \
     `password-flag` \
     $DRY_RUN \
-    --super \
     $ATTRIBUTES_FLAGS \
     --numeric-ids \
     rsync://$REMOTE_USER@$BACKUP_TARGET/"$GENERATION"/"$1" \
@@ -217,15 +216,18 @@ restore() {
   done
   shift $((OPTIND-1))
 
+  debug_echo Restore arguments now: "$@"
+  debug_echo '$#:' $#
+
   # If there's no file or directory specified to be restored
-  if [[ $# -le 1 ]]; then
+  if [[ $# -lt 1 ]]; then
     RESTORE_DEST=${RESTORE_DEST-$BACKUP_SOURCE}
     if [ "$OVERWRITE" != "true" ] && [ -e "$RESTORE_DEST" ]; then
       echo "$RESTORE_DEST" exists. Use "-o" to allow overwrite. Exiting.
       return 1
     fi
     $DEBUG_ECHO Restore: all to $RESTORE_DEST
-    rsync-restore "" ${RESTORE_DEST-$f}
+    rsync-restore "" ${RESTORE_DEST}
   # there is a file or directory specified to be restored
   else
     if [ "$OVERWRITE" != "true" ]; then
