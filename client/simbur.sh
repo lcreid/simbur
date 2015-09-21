@@ -55,7 +55,8 @@ while getopts fhinvc: x ; do
         exit 0;;
     i)  BACKUP_TYPE=incremental;;
     n)  DRY_RUN=--dry-run;;
-    v)  VERBOSE=1;;
+    v)  VERBOSE=1
+        RSYNC_VERBOSE=-v;;
   esac
 done
 shift $((OPTIND-1))
@@ -154,8 +155,8 @@ back-up() {
 
   $DEBUG_ECHO Starting rsync
   # Recursively copy everything (-a) and preserve ACLs (-A) and extended attributes (-X)
-  # TODO: Check --super and --fake-super and changing owner.
-  $RSYNC_CMD -va \
+  $RSYNC_CMD -a \
+    $RSYNC_VERBOSE \
     `password-flag` \
     $DRY_RUN \
     $LINK_FLAGS \
@@ -167,7 +168,7 @@ back-up() {
     --log-file $LOG_DIR/$SNAPSHOT.log \
     --stats \
     $BACKUP_SOURCE \
-    rsync://$REMOTE_USER@$BACKUP_TARGET/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>&1
+    rsync://$REMOTE_USER@$BACKUP_TARGET/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>>$LOG_DIR/simbur.err
 
   RETURN=$?
 
@@ -196,7 +197,8 @@ rsync-restore() {
   # $3 if present is the backup generation to retrieve from.
   GENERATION=${3-`simbur-last-directory`}
 
-  $RSYNC_CMD -va \
+  $RSYNC_CMD -a \
+    $RSYNC_VERBOSE \
     `password-flag` \
     $DRY_RUN \
     $ATTRIBUTES_FLAGS \
