@@ -6,57 +6,47 @@ SIMple Back Up and Recovery
 You need to have accounts with administrator privileges on both the client and the server (you must be able to sudo
 on both the client and the server).
 
+NOTE: This version is not suitable for use on a network where you can't trust everyone.
+
 ### Server
-If you already have a server set up, you don't have to do this again.
+The server must be a Synology DSM 5.2 or similar device.
 
-If you don't have a server set up, you have to set one up. You need a Linux server
-that has enough space to store all your backups. A good rule of thumb is that you need the total space of all the
-machines you intend to back up, times three. You need administrator privileges on the server.
+Log in to the server as root, can create a directory for the backup:
 
-Log in to the backup server. If you haven't installed git and make, install them.
 ```
-sudo apt-get install git make
-git config --global user.name "FirstName LastName"
-git config --global user.email e-mail-address
+mkdir -p /volume1/NetBackup/backupdir/client-machine-name
 ```
-Get the simbur code:
 
-    git clone git://github.com/lcreid/simbur.git
-
-Install it:
-
-    cd simbur/server
-    sudo make install
-
-set up the server configuration file the way you want it:
-
-    sudo vi /etc/simbur/server.conf
+Where `client-machine-name` is the name of the host that you want to back up.
 
 ### Client
-Enroll the new client machine. Log in to the server.
+Install the client:
 
-    sudo /usr/local/lib/simbur/enroll-host client-machine-name
-
-Follow the instructions to copy the private key to the client machine in /etc/simbur/hostname_dsa.
-
-Log in to the client machine. If you haven't installed git and make, install them.
 ```
-sudo apt-get install git make
-git config --global user.name "FirstName LastName"
-git config --global user.email e-mail-address
+dpkg -i simbur-client.deb
 ```
-Get the simbur code:
 
-    git clone git://github.com/lcreid/simbur.git
+TODO: Where to get the  `.deb`?
 
-Install it:
-```
-cd simbur/client
-sudo make install
-```
-Set up the client configuration file the way you need it. This step is obligatory. You need to configure the 
+Set up the client configuration file the way you need it. This step is obligatory. You need to configure the
 backup server at the very least:
 
-    sudo vi /etc/simbur/client.conf
+```
+sudo vi /etc/simbur/client.conf
+```
+
+Change `fs-1` on the line that starts `BACKUP_HOST=` to the name of the Synology device, e.g.:
+
+```
+BACKUP_HOST=my-syno-box
+```
+
+Make a password file, and put the admin password for your Synology box in it:
+
+```
+sudo touch /etc/simbur/password
+sudo chmod 600 /etc/simbur/password
+sudo vi /etc/simbur/password
+```
 
 Other documentation is in the [simbur wiki](https://github.com/lcreid/simbur/wiki).
