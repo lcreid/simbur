@@ -71,8 +71,13 @@ $DEBUG_ECHO COMMAND: $COMMAND
 CONFIG_FILE=${CONFIG_FILE-/etc/simbur/simbur-client.conf}
 . $CONFIG_FILE
 
+backup-target(){
+  echo $BACKUP_HOST/$BACKUP_ROOT/$BACKUP_USER
+}
+
 $DEBUG_ECHO REMOTE_USER: $REMOTE_USER
 $DEBUG_ECHO BACKUP_TARGET: $BACKUP_TARGET
+$DEBUG_ECHO backup-target: `backup-target`
 $DEBUG_ECHO BACKUP_USER: $BACKUP_USER
 $DEBUG_ECHO BACKUP_SOURCE: $BACKUP_SOURCE
 $DEBUG_ECHO EXCLUDES: $EXCLUDES
@@ -112,7 +117,7 @@ $DEBUG_ECHO ATTRIBUTES_FLAGS: $ATTRIBUTES_FLAGS
 
 
 simbur-ls() {
-  $RSYNC_CMD --password-file=$PASSWORD rsync://$REMOTE_USER@$BACKUP_TARGET/"$1"
+  $RSYNC_CMD --password-file=$PASSWORD rsync://$REMOTE_USER@`backup-target`/"$1"
 }
 
 simbur-last-backup() {
@@ -168,7 +173,7 @@ back-up() {
     --log-file $LOG_DIR/$SNAPSHOT.log \
     --stats \
     $BACKUP_SOURCE \
-    rsync://$REMOTE_USER@$BACKUP_TARGET/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>>$LOG_DIR/simbur.err
+    rsync://$REMOTE_USER@`backup-target`/$SNAPSHOT_IN_PROGRESS >>$LOG_DIR/simbur.log 2>>$LOG_DIR/simbur.err
 
   RETURN=$?
 
@@ -203,27 +208,45 @@ rsync-restore() {
     $DRY_RUN \
     $ATTRIBUTES_FLAGS \
     --numeric-ids \
-    rsync://$REMOTE_USER@$BACKUP_TARGET/"$GENERATION"/"$1" \
+    rsync://$REMOTE_USER@`backup-target`/"$GENERATION"/"$1" \
     "$2"
+}
+
+restore-usage() {
+  echo Usage: `basename $0` restore -[ho] [-d DESTINATION_DIRECTORY] [-u BACKUP_USER]
+  cat <<-EOF
+    -d DESTINATION_DIRECTORY
+        Destination directory for restore
+    -h  This message
+    -o  Overwrite destination files if they already exist
+    -u BACKUP_USER
+        Source of the backup. Needed when restoring to a different
+        server than the original backup was taken from
+EOF
 }
 
 restore() {
   $DEBUG_ECHO restore $# "$@"
   local OPTIND
-  while getopts od: x ; do
+  while getopts hod:u: x ; do
     case $x in
       d)  RESTORE_DEST=$OPTARG;;
+      h)  restore-usage
+          exit 0;;
       o)  OVERWRITE="true";;
+      u)  BACKUP_USER=$OPTARG;;
     esac
   done
   shift $((OPTIND-1))
 
   debug_echo Restore arguments now: "$@"
   debug_echo '$#:' $#
+  debug_echo RESTORE_DEST: $RESTORE_DEST
 
   # If there's no file or directory specified to be restored
   if [[ $# -lt 1 ]]; then
     RESTORE_DEST=${RESTORE_DEST-$BACKUP_SOURCE}
+    debug_echo RESTORE_DEST: $RESTORE_DEST
     if [ "$OVERWRITE" != "true" ] && [ -e "$RESTORE_DEST" ]; then
       echo "$RESTORE_DEST" exists. Use "-o" to allow overwrite. Exiting.
       return 1
