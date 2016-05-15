@@ -32,15 +32,16 @@ usage() {
 
     Commands are:
 
-    ls [file...]: List the files and directories at the backup target.
+    ls [-u user] [file...]: List the files and directories at the backup target.
     enroll: Create target for a new backup (e.g. a new machine).
     full: Do a full backup.
     incremental: Do an incremental backup (default).
-    restore [-o] [-d restore-destination] [files...]: Restore files.
+    restore [-o] [-d restore-destination] [-u user] [files...]: Restore files.
       Default for files is the entire backup.
       -o: Overwrite existing files.
       -d: Restore to restore-destination. Default is to original location,
           but you must specify -o if the location already exists.
+      -u: Restore from a different user (different backup)
 EOF
 }
 
@@ -115,8 +116,31 @@ $DEBUG_ECHO RSYNC_CMD: $RSYNC_CMD
 $DEBUG_ECHO ATTRIBUTES_FLAGS: $ATTRIBUTES_FLAGS
 
 
+ls-usage() {
+  echo Usage: `basename $0` restore -[ho] [-d DESTINATION_DIRECTORY] [-u BACKUP_USER]
+  cat <<-EOF
+  -h  This message
+  -u BACKUP_USER
+      Source of the backup. Needed when ls-ing from a different
+      server than the original backup was taken from
+EOF
+}
 
 simbur-ls() {
+  $DEBUG_ECHO ls $# "$@"
+  local OPTIND
+  while getopts hu: x ; do
+    case $x in
+      h)  ls-usage
+          exit 0;;
+      u)  BACKUP_USER=$OPTARG;;
+    esac
+  done
+  shift $((OPTIND-1))
+
+  debug_echo ls arguments now: "$@"
+  debug_echo '$#:' $#
+
   $RSYNC_CMD --password-file=$PASSWORD rsync://$REMOTE_USER@`backup-target`/"$1"
 }
 

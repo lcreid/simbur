@@ -14,7 +14,7 @@ The server must be a Synology DSM 5.2 or similar device.
 Log in to the server as root, can create a directory for the backup:
 
 ```
-mkdir -p /volume1/NetBackup/backupdir/client-machine-name
+mkdir -p /volume1/NetBackup/backupdata/client-machine-name
 ```
 
 Where `client-machine-name` is the name of the host that you want to back up.
