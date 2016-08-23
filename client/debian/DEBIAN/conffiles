@@ -2,3 +2,4 @@
 /etc/simbur/exclude.conf
 /etc/logrotate.d/simbur-client-logrotate.conf
 /etc/init/simburd.conf
+/etc/systemd/system/simburd.service

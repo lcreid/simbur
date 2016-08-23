@@ -1,0 +1,11 @@
+[Unit]
+Description=Run the simburd client daemon.
+
+[Service]
+ExecStart=/usr/bin/simburd
+ExecStop=/usr/bin/killall simburd
+Restart=on-failure
+RestartSec=20
+
+[Install]
+WantedBy=multi-user.target

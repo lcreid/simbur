@@ -31,6 +31,8 @@ ifeq (Darwin, ${TARGET_OS})
 else ifeq (Linux, ${TARGET_OS})
 	INIT_DIR=${sysconfdir}/init
 	INSTALLED_CONFIG_FILES+=$(INIT_DIR)/simburd.conf
+	SYSTEMD_DIR=${sysconfdir}/systemd/system
+	INSTALLED_CONFIG_FILES+=$(SYSTEMD_DIR)/simburd.service
 	LOGROTATE_DIR=${sysconfdir}/logrotate.d
 	INSTALLED_CONFIG_FILES+=${LOGROTATE_DIR}/simbur-client-logrotate.conf
 else
@@ -52,8 +54,6 @@ ${INSTALLED_MANPAGES} \
 ${INSTALLED_CONFIG_FILES}: $$(@F)
 	cp $? $@
 
-$(INSTALLED_INIT_FILES):
-
 config: ${SIMBUR_CONF_DIR} ${INSTALLED_CONFIG_FILES}
 
 
@@ -65,7 +65,7 @@ config: ${SIMBUR_CONF_DIR} ${INSTALLED_CONFIG_FILES}
 
 debian: simbur-client.deb
 
-simbur-client.deb: ${SOURCES} debian/DEBIAN/* simburd.conf
+simbur-client.deb: ${SOURCES} debian/DEBIAN/* simburd.conf simburd.service
 	make DESTDIR=debian install
 	-rm debian/DEBIAN/*~
 	fakeroot dpkg-deb --build debian
@@ -109,10 +109,11 @@ distclean: clean
 installdirs: ${bindir} \
 ${SIMBUR_CONF_DIR} \
 ${INIT_DIR} \
+${SYSTEMD_DIR} \
 ${man1dir} \
 ${man5dir} \
 ${docdir} \
 ${LOGROTATE_DIR}
 
-${bindir} ${SIMBUR_CONF_DIR} ${INIT_DIR} ${man1dir} ${man5dir} ${docdir} ${LOGROTATE_DIR}:
+${bindir} ${SIMBUR_CONF_DIR} ${INIT_DIR} ${SYSTEMD_DIR} ${man1dir} ${man5dir} ${docdir} ${LOGROTATE_DIR}:
 	mkdir -p $@
