@@ -48,9 +48,14 @@ sudo touch /etc/simbur/password
 sudo chmod 600 /etc/simbur/password
 sudo vi /etc/simbur/password
 ```
-Finally, start the daemon. On systems with upstart, do:
+Finally, start the daemon. On systems with `upstart`, do:
 ```
 start simburd
+```
+
+On systems with `systemd`, do:
+```
+systemctl start simburd
 ```
 
 Other documentation is in the [simbur wiki](https://github.com/lcreid/simbur/wiki).
