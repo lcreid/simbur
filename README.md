@@ -20,15 +20,17 @@ mkdir -p /volume1/NetBackup/backupdata/client-machine-name
 Where `client-machine-name` is the name of the host that you want to back up.
 
 ### Client
+Download the client installer from:
+https://github.com/lcreid/simbur/releases/download/v2.2/simbur-client.deb
+
 Install the client:
 
 ```
 dpkg -i simbur-client.deb
 ```
 
-TODO: Where to get the  `.deb`?
-
-Set up the client configuration file the way you need it. This step is obligatory. You need to configure the
+Set up the client configuration file the way you need it. This step is obligatory.
+You need to configure the
 backup server at the very least:
 
 ```
