@@ -21,7 +21,7 @@ Where `client-machine-name` is the name of the host that you want to back up.
 
 ### Client
 Download the client installer from:
-https://github.com/lcreid/simbur/releases/download/v2.2/simbur-client.deb
+https://github.com/lcreid/simbur/releases/download/v2.2.2/simbur-client.deb
 
 Install the client:
 
