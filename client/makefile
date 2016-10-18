@@ -36,7 +36,7 @@ else ifeq (Linux, ${TARGET_OS})
 	LOGROTATE_DIR=${sysconfdir}/logrotate.d
 	INSTALLED_CONFIG_FILES+=${LOGROTATE_DIR}/simbur-client-logrotate.conf
 else
-	$(error "Operating system " ${TARGET_OS} " not supported."
+	$(error "Operating system " ${TARGET_OS} " not supported.")
 endif
 
 all: ${EXECUTABLES}
@@ -55,7 +55,6 @@ ${INSTALLED_CONFIG_FILES}: $$(@F)
 	cp $? $@
 
 config: ${SIMBUR_CONF_DIR} ${INSTALLED_CONFIG_FILES}
-
 
 ############
 #

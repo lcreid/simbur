@@ -21,3 +21,5 @@ osx/
 *.gz
 *.deb
 server/tmp
+.vagrant
+Vagrantfile
