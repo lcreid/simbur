@@ -26,7 +26,7 @@ https://github.com/lcreid/simbur/releases/download/v2.2/simbur-client.deb
 Install the client:
 
 ```
-dpkg -i simbur-client.deb
+sudo dpkg -i simbur-client.deb
 ```
 
 Set up the client configuration file the way you need it. This step is obligatory.
@@ -52,12 +52,12 @@ sudo vi /etc/simbur/password
 ```
 Finally, start the daemon. On systems with `upstart`, do:
 ```
-start simburd
+sudo start simburd
 ```
 
 On systems with `systemd`, do:
 ```
-systemctl start simburd
+sudo systemctl start simburd
 ```
 
 Other documentation is in the [simbur wiki](https://github.com/lcreid/simbur/wiki).
