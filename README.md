@@ -34,7 +34,7 @@ You need to configure the
 backup server at the very least:
 
 ```
-sudo vi /etc/simbur/client.conf
+sudo vi /etc/simbur/simbur-client.conf
 ```
 
 Change `fs-1` on the line that starts `BACKUP_HOST=` to the name of the Synology device, e.g.:
