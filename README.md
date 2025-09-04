@@ -11,7 +11,7 @@ NOTE: This version is not suitable for use on a network where you can't trust ev
 ### Server
 The server must be a Synology DSM 5.2 or similar device.
 
-Log in to the server as root, can create a directory for the backup:
+Log in to the server as root, and create a directory for the backup:
 
 ```
 mkdir -p /volume1/NetBackup/backupdata/client-machine-name
@@ -41,6 +41,12 @@ Change `fs-1` on the line that starts `BACKUP_HOST=` to the name of the Synology
 
 ```
 BACKUP_HOST=my-syno-box
+```
+
+Change `BACKUP_ROOT` (I've changed the target with the new Synology and haven't changed the default):
+
+```
+BACKUP_ROOT=NetBackup
 ```
 
 Make a password file, and put the admin password for your Synology box in it:
